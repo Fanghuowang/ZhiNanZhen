@@ -41,7 +41,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
     }
 
     .dial-wrapper {
@@ -172,6 +172,32 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* CALIBRATION SLIDER CSS */
+    .calibration-box {
+      margin-top: 15px;
+      background: #1c1c1e;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    
+    .calibration-box input {
+      flex: 1;
+      accent-color: #ff3b30;
+    }
+    
+    #offsetValue {
+      min-width: 35px;
+      text-align: right;
+      color: #fff;
+      font-weight: bold;
+    }
+
     .permission-overlay {
       position: fixed;
       inset: 0;
@@ -241,6 +267,13 @@
         <span class="meta-value" id="speedValue">0 km/h</span>
       </div>
     </div>
+
+    <!-- Calibration Slider -->
+    <div class="calibration-box">
+      <span>校准 (Calibrate)</span>
+      <input type="range" id="calibrationSlider" min="-180" max="180" value="0">
+      <span id="offsetValue">0°</span>
+    </div>
   </div>
 
   <script>
@@ -251,12 +284,20 @@
     const permOverlay = document.getElementById('permOverlay');
     const grantBtn = document.getElementById('grantBtn');
     const compassSvg = document.getElementById('compassSvg');
+    const calibrationSlider = document.getElementById('calibrationSlider');
+    const offsetValue = document.getElementById('offsetValue');
 
     let targetHeading = 0;
-    let displayHeading = 0; // Used for smooth visual animation
+    let displayHeading = 0; 
     let isTracking = false;
+    let manualOffset = 0;
 
-    // Build SVG Compass
+    // Slider logic to fix the 20-degree offset
+    calibrationSlider.addEventListener('input', (e) => {
+      manualOffset = parseInt(e.target.value);
+      offsetValue.textContent = `${manualOffset}°`;
+    });
+
     function buildCompass() {
       let html = '';
       const cx = 200;
@@ -308,22 +349,19 @@
 
     const dirNames = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
 
-    // Animation Loop
     function render() {
       if (isTracking) {
-        // Interpolate for a buttery-smooth visual transition
         let diff = targetHeading - displayHeading;
         if (diff > 180) diff -= 360;
         if (diff < -180) diff += 360;
         
+        // Super smooth animation
         displayHeading += diff * 0.15;
         displayHeading = (displayHeading + 360) % 360;
         
-        // Apply visual rotation
         dialWrapper.style.transform = `rotate(${-displayHeading}deg)`;
         needleContainer.style.transform = `rotate(${displayHeading}deg)`;
 
-        // Update UI text
         const displayDeg = Math.round(displayHeading);
         headingText.textContent = `${displayDeg}°`;
         
@@ -339,28 +377,21 @@
       requestAnimationFrame(render);
     }
 
-    // SENSOR LOGIC WITH FILTERING
-    let lastSensorTime = 0;
-
     function handleOrientation(e) {
       let rawHeading = 0;
 
-      // 1. Get the raw heading based on platform
       if (e.webkitCompassHeading) {
-        // iOS (Already smoothed by OS)
         rawHeading = e.webkitCompassHeading;
       } else if (e.alpha !== null && e.alpha !== undefined) {
-        // Android / Generic (Invert Alpha to get clockwise heading)
+        // Android: Invert alpha for clockwise heading
         rawHeading = 360 - e.alpha;
       } else {
         return;
       }
 
-      // Normalize
-      rawHeading = (rawHeading + 360) % 360;
+      // Apply the manual calibration offset
+      rawHeading = (rawHeading + manualOffset + 360) % 360;
 
-      // 2. Apply a Low-Pass Filter to eliminate jitter
-      // If it's the first reading, snap to it.
       if (!isTracking) {
         targetHeading = rawHeading;
         displayHeading = rawHeading;
@@ -369,18 +400,15 @@
         return;
       }
 
-      // Calculate the shortest path difference
       let diff = rawHeading - targetHeading;
       if (diff > 180) diff -= 360;
       if (diff < -180) diff += 360;
 
-      // Filter out tiny vibrations (less than 2 degrees)
-      // This prevents the compass from twitching when held perfectly still
-      if (Math.abs(diff) < 2) return;
+      // Filter out tiny jitters (less than 1.5 degrees)
+      if (Math.abs(diff) < 1.5) return;
 
-      // Apply a smoothing factor (0.2 means it moves 20% towards the new reading)
-      // Lower number = smoother but slightly delayed. Higher = faster but jittery.
-      targetHeading += diff * 0.2;
+      // Heavy smoothing
+      targetHeading += diff * 0.15;
       targetHeading = (targetHeading + 360) % 360;
     }
 
@@ -390,9 +418,7 @@
       if (isiOS) {
         window.addEventListener("deviceorientation", handleOrientation, true);
       } else {
-        // Android needs absolute for true North
         window.addEventListener("deviceorientationabsolute", handleOrientation, true);
-        // Fallback
         window.addEventListener("deviceorientation", handleOrientation, true);
       }
     }
@@ -413,7 +439,6 @@
       }
     });
 
-    // Auto-start for Android
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
       initSensors();
       permOverlay.classList.add('hidden');
