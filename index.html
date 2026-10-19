@@ -1,389 +1,388 @@
 <!DOCTYPE html>
 <html lang="zh-Hans">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>在线指南针 - 中文方向与角度</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #fff;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 1.5rem 1rem;
-        }
-        .compass-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 480px;
-        }
-        .compass {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            background: #f0f4fa;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            margin: 1.5rem auto;
-            transition: transform 0.05s ease;
-        }
-        .compass .circle {
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ffffff, #e0e8f0);
-            border: 4px solid #2c6cb0;
-        }
-        /* 方向字符 */
-        .dir-label {
-            position: absolute;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #1f3a5f;
-            width: 2.2rem;
-            text-align: center;
-            user-select: none;
-            pointer-events: none;
-            z-index: 5;
-        }
-        .dir-n { top: 8px; left: 50%; transform: translateX(-50%); color: #c0392b; }
-        .dir-e { right: 12px; top: 50%; transform: translateY(-50%); color: #2c6cb0; }
-        .dir-s { bottom: 8px; left: 50%; transform: translateX(-50%); color: #27ae60; }
-        .dir-w { left: 12px; top: 50%; transform: translateY(-50%); color: #e67e22; }
 
-        /* 指针 */
-        .needle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 8px;
-            height: 46%;
-            background: linear-gradient(to bottom, #e74c3c 50%, #fff 50%);
-            border-radius: 4px;
-            transform-origin: center bottom;
-            transform: translate(-50%, -100%) rotate(0deg);
-            transition: transform 0.08s linear;
-            z-index: 10;
-            box-shadow: 0 0 6px rgba(0,0,0,0.2);
-        }
-        .needle::after {
-            content: "";
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 7px solid transparent;
-            border-right: 7px solid transparent;
-            border-bottom: 14px solid #e74c3c;
-        }
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>在线指南针 - 免费实时指南针，快速找到正北方向</title>
+        <meta name="description" content="使用我们的免费在线工具，获取准确的东、西、南、北实时指南针方向。用在线指南针轻松辨别方向。">
+        <meta name="author" content="Developix">
+        <meta name="theme-color" content="#5498e5">
+        <meta name="color-scheme" content="light dark">
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
-        /* 中心圆点 */
-        .center-dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 16px;
-            height: 16px;
-            background: #2c3e50;
-            border: 3px solid #fff;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 20;
-        }
+        
+                <link rel="canonical" href="https://onlinecompass.net/zh-Hans/online-compass">
+        <link rel="alternate" hreflang="x-default" href="https://onlinecompass.net" />
+            <link rel='canonical'  href='https://onlinecompass.net/zh-Hans/online-compass' />
+    <link rel='alternate' hreflang='ar' href='https://onlinecompass.net/ar/online-compass' />
+    <link rel='alternate' hreflang='bn' href='https://onlinecompass.net/bn/online-compass' />
+    <link rel='alternate' hreflang='bg' href='https://onlinecompass.net/bg/online-compass' />
+    <link rel='alternate' hreflang='ca' href='https://onlinecompass.net/ca/online-compass' />
+    <link rel='alternate' hreflang='zh-Hant' href='https://onlinecompass.net/zh-Hant/online-compass' />
+    <link rel='alternate' hreflang='hr' href='https://onlinecompass.net/hr/online-compass' />
+    <link rel='alternate' hreflang='cs' href='https://onlinecompass.net/cs/online-compass' />
+    <link rel='alternate' hreflang='da' href='https://onlinecompass.net/da/online-compass' />
+    <link rel='alternate' hreflang='nl' href='https://onlinecompass.net/nl/online-compass' />
+    <link rel='alternate' hreflang='et' href='https://onlinecompass.net/et/online-compass' />
+    <link rel='alternate' hreflang='fil' href='https://onlinecompass.net/fl/online-compass' />
+    <link rel='alternate' hreflang='fi' href='https://onlinecompass.net/fi/online-compass' />
+    <link rel='alternate' hreflang='fr' href='https://onlinecompass.net/fr/online-compass' />
+    <link rel='alternate' hreflang='de' href='https://onlinecompass.net/de/online-compass' />
+    <link rel='alternate' hreflang='el' href='https://onlinecompass.net/el/online-compass' />
+    <link rel='alternate' hreflang='gu' href='https://onlinecompass.net/gu/online-compass' />
+    <link rel='alternate' hreflang='he' href='https://onlinecompass.net/he/online-compass' />
+    <link rel='alternate' hreflang='hi' href='https://onlinecompass.net/hi/online-compass' />
+    <link rel='alternate' hreflang='hu' href='https://onlinecompass.net/hu/online-compass' />
+    <link rel='alternate' hreflang='id' href='https://onlinecompass.net/id/online-compass' />
+    <link rel='alternate' hreflang='it' href='https://onlinecompass.net/it/online-compass' />
+    <link rel='alternate' hreflang='ja' href='https://onlinecompass.net/ja/online-compass' />
+    <link rel='alternate' hreflang='kn' href='https://onlinecompass.net/kn/online-compass' />
+    <link rel='alternate' hreflang='ko' href='https://onlinecompass.net/ko/online-compass' />
+    <link rel='alternate' hreflang='lv' href='https://onlinecompass.net/lv/online-compass' />
+    <link rel='alternate' hreflang='lt' href='https://onlinecompass.net/lt/online-compass' />
+    <link rel='alternate' hreflang='ms' href='https://onlinecompass.net/ms/online-compass' />
+    <link rel='alternate' hreflang='ml' href='https://onlinecompass.net/ml/online-compass' />
+    <link rel='alternate' hreflang='mr' href='https://onlinecompass.net/mr/online-compass' />
+    <link rel='alternate' hreflang='no' href='https://onlinecompass.net/no/online-compass' />
+    <link rel='alternate' hreflang='pl' href='https://onlinecompass.net/pl/online-compass' />
+    <link rel='alternate' hreflang='pt' href='https://onlinecompass.net/pt/online-compass' />
+    <link rel='alternate' hreflang='pa' href='https://onlinecompass.net/pa/online-compass' />
+    <link rel='alternate' hreflang='ro' href='https://onlinecompass.net/ro/online-compass' />
+    <link rel='alternate' hreflang='ru' href='https://onlinecompass.net/ru/online-compass' />
+    <link rel='alternate' hreflang='sr' href='https://onlinecompass.net/sr/online-compass' />
+    <link rel='alternate' hreflang='sk' href='https://onlinecompass.net/sk/online-compass' />
+    <link rel='alternate' hreflang='sl' href='https://onlinecompass.net/sl/online-compass' />
+    <link rel='alternate' hreflang='es' href='https://onlinecompass.net/es/online-compass' />
+    <link rel='alternate' hreflang='sv' href='https://onlinecompass.net/sv/online-compass' />
+    <link rel='alternate' hreflang='ta' href='https://onlinecompass.net/ta/online-compass' />
+    <link rel='alternate' hreflang='te' href='https://onlinecompass.net/te/online-compass' />
+    <link rel='alternate' hreflang='th' href='https://onlinecompass.net/th/online-compass' />
+    <link rel='alternate' hreflang='tr' href='https://onlinecompass.net/tr/online-compass' />
+    <link rel='alternate' hreflang='uk' href='https://onlinecompass.net/uk/online-compass' />
+    <link rel='alternate' hreflang='en' href='https://onlinecompass.net' />
+    <link rel='alternate' hreflang='vi' href='https://onlinecompass.net/vi/online-compass' />
 
-        /* 读取卡片 */
-        .readings {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-        .reading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #fff;
-            padding: 12px 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.07);
-        }
-        .reading .label {
-            font-size: 1rem;
-            color: #666;
-            font-weight: 600;
-        }
-        .reading .value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #1f5fb4;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: 0.5px;
-        }
-        .reading .value .dir-char {
-            color: #c0392b;
-            margin-right: 6px;
-            font-size: 2rem;
-        }
+        
+        <meta property="og:locale" content="zh-Hans">
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="在线指南针 - 免费实时指南针，快速找到正北方向">
+        <meta property="og:description" content="使用我们的免费在线工具，获取准确的东、西、南、北实时指南针方向。用在线指南针轻松辨别方向。">
+        <meta property="og:site_name" content="Online Compass">
+        <meta property="og:url" content="https://onlinecompass.net/zh-Hans/online-compass">
+        <meta property="og:image:type" content="image/jpeg">
+            <meta property="og:image" content="https://onlinecompass.net/images/banner.png">
+    <meta property="og:image:url" content="https://onlinecompass.net/images/banner.png" />
+    <meta property="og:image:secure_url" content="https://onlinecompass.net/images/banner.png" />
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="600">
+    <meta property="og:image:alt" content="在线指南针 - 免费实时指南针，快速找到正北方向">
+    <meta name="twitter:image" content="https://onlinecompass.net/images/banner.png">
 
-        .note {
-            font-size: 0.85rem;
-            color: #888;
-            text-align: center;
-            margin-top: 1.2rem;
-            max-width: 400px;
-        }
-        .note strong { color: #2c6cb0; }
-        .error-msg {
-            color: #c0392b;
-            background: #fdecea;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            display: none;
-        }
-    </style>
-</head>
-<body>
+        
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="在线指南针 - 免费实时指南针，快速找到正北方向">
+        <meta name="twitter:description" content="使用我们的免费在线工具，获取准确的东、西、南、北实时指南针方向。用在线指南针轻松辨别方向。">
 
-<div class="compass-container">
-    <!-- 指南针主体 -->
-    <div class="compass" id="compass">
-        <div class="circle"></div>
-        <!-- 东南西北 中文方向标记 -->
-        <div class="dir-label dir-n">北</div>
-        <div class="dir-label dir-e">东</div>
-        <div class="dir-label dir-s">南</div>
-        <div class="dir-label dir-w">西</div>
-        <!-- 指针 -->
-        <div class="needle" id="needle"></div>
-        <div class="center-dot"></div>
-    </div>
+        
+        <link rel="apple-touch-icon" sizes="180x180" href="https://onlinecompass.net/icons/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="https://onlinecompass.net/icons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="https://onlinecompass.net/icons/favicon-16x16.png">
+        <link rel="manifest" href="https://onlinecompass.net/icons/site.webmanifest">
+        <link rel="mask-icon" href="https://onlinecompass.net/icons/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="shortcut icon" href="https://onlinecompass.net/icons/onlinecompass-favicon.ico" type="image/x-icon">
+        <meta name="msapplication-TileColor" content="#da532c">
 
-    <!-- 输出：方向与角度 -->
-    <div class="readings">
-        <div class="reading">
-            <span class="label">当前方向</span>
-            <span class="value" id="directionDisplay">
-                <span class="dir-char" id="dirChar">北</span>
-                <span id="angleValue">0.0°</span>
-            </span>
-        </div>
-        <div class="reading" style="background:#f8fafc;">
-            <span class="label">角度（0° = 正北，顺时针）</span>
-            <span class="value" id="angleOnly" style="font-size:1.5rem;color:#2c3e50;">0.0°</span>
-        </div>
-    </div>
+        <meta name="csrf-token" content="xue1WcaM9sMzPOW4oyXLsYvslAP1ACakUmnqlaj9">
 
-    <div class="note">
-        <strong>提示：</strong> 请将设备水平放置。若方向不变，请尝试在手机上打开此页面，或点击下方按钮启动传感器。
-    </div>
-
-    <button id="startBtn" style="margin-top:16px; padding:10px 28px; background:#5498e5; color:#fff; border:none; border-radius:24px; font-size:1rem; font-weight:600; cursor:pointer;">启动指南针</button>
-    <div class="error-msg" id="errorMsg"></div>
-</div>
-
-<script>
-    (function() {
-        // --- DOM 引用 ---
-        const needleEl = document.getElementById('needle');
-        const compassEl = document.getElementById('compass');
-        const dirCharEl = document.getElementById('dirChar');
-        const angleValueEl = document.getElementById('angleValue');
-        const angleOnlyEl = document.getElementById('angleOnly');
-        const startBtn = document.getElementById('startBtn');
-        const errorMsg = document.getElementById('errorMsg');
-
-        // --- 状态 ---
-        let currentHeading = 0;          // 0..360 度，0 = 北，顺时针
-        let isTracking = false;
-        let hasHeading = false;
-        let startBtnClicked = false;
-        let fallbackTimer = null;
-        let useAbsolute = true;
-
-        // --- 中文方向映射（8 方位）---
-        function getChineseDirection(deg) {
-            // 将角度规范到 [0, 360)
-            const d = ((deg % 360) + 360) % 360;
-            if (d >= 337.5 || d < 22.5) return '北';
-            if (d >= 22.5 && d < 67.5) return '东北';
-            if (d >= 67.5 && d < 112.5) return '东';
-            if (d >= 112.5 && d < 157.5) return '东南';
-            if (d >= 157.5 && d < 202.5) return '南';
-            if (d >= 202.5 && d < 247.5) return '西南';
-            if (d >= 247.5 && d < 292.5) return '西';
-            if (d >= 292.5 && d < 337.5) return '西北';
-            return '北';
-        }
-
-        // --- 更新 UI ---
-        function updateDisplay(heading) {
-            // 规范角度
-            const h = ((heading % 360) + 360) % 360;
-            currentHeading = h;
-
-            // 旋转指针（指向当前方向）
-            // 指针默认指向正上方（北），rotate 角度即为 heading
-            if (needleEl) {
-                needleEl.style.transform = `translate(-50%, -100%) rotate(${h}deg)`;
-            }
-
-            // 中文方向
-            const dir = getChineseDirection(h);
-            if (dirCharEl) dirCharEl.textContent = dir;
-
-            // 角度格式化：保留1位小数
-            const angleStr = h.toFixed(1) + '°';
-            if (angleValueEl) angleValueEl.textContent = angleStr;
-            if (angleOnlyEl) angleOnlyEl.textContent = angleStr;
-        }
-
-        // --- 处理方向事件（通用）---
-        function handleOrientation(e) {
-            if (!isTracking) return;
-
-            let heading = null;
-
-            // 优先使用 webkitCompassHeading（iOS）
-            if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
-                heading = e.webkitCompassHeading;
-            }
-            // 否则使用 alpha（Android/Chrome）
-            else if (typeof e.alpha === 'number' && !isNaN(e.alpha)) {
-                // alpha: 0 表示设备指向北，顺时针增加？需要校准
-                // 标准: alpha 是设备绕 z 轴的旋转，0 表示北，但方向可能相反
-                // 通常设备orientation alpha: 0 指向北，但旋转方向是逆时针？
-                // 实际测试中，Chrome Android 的 alpha 需要转换: heading = 360 - alpha
-                // 但为了兼容，使用 (360 - alpha) % 360
-                heading = (360 - e.alpha) % 360;
-            }
-
-            if (heading !== null) {
-                hasHeading = true;
-                updateDisplay(heading);
-            }
-        }
-
-        // --- 启动指南针（需用户手势）---
-        function startCompass() {
-            if (isTracking) return;
-
-            errorMsg.style.display = 'none';
-            errorMsg.textContent = '';
-
-            // 检测是否为 iOS
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-            // 如果支持 requestPermission（iOS 13+）
-            if (typeof DeviceOrientationEvent !== 'undefined' &&
-                typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            isTracking = true;
-                            startBtn.style.display = 'none';
-                            // 监听方向事件
-                            window.addEventListener('deviceorientation', handleOrientation, true);
-                            // 同时尝试绝对方向（如果支持）
-                            if (window.DeviceOrientationAbsoluteEvent) {
-                                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-                            }
-                            // 如果 3 秒内没有收到数据，提示
-                            setTimeout(() => {
-                                if (!hasHeading) {
-                                    errorMsg.textContent = '未检测到方向数据。请确保设备有磁力计，并尝试在手机上使用。';
-                                    errorMsg.style.display = 'block';
-                                }
-                            }, 3000);
-                        } else {
-                            errorMsg.textContent = '权限被拒绝。请允许访问运动与方向数据。';
-                            errorMsg.style.display = 'block';
-                        }
-                    })
-                    .catch(err => {
-                        console.error('请求权限失败:', err);
-                        errorMsg.textContent = '无法请求方向权限。请确保在 HTTPS 页面或 localhost 上使用。';
-                        errorMsg.style.display = 'block';
-                    });
-            } else {
-                // 非 iOS 或旧版 iOS：直接监听
-                isTracking = true;
-                startBtn.style.display = 'none';
-
-                // 优先监听绝对方向
-                if (window.DeviceOrientationAbsoluteEvent) {
-                    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-                    // 如果 1.5 秒内没有绝对方向事件，则回退到普通方向事件
-                    fallbackTimer = setTimeout(() => {
-                        if (!hasHeading) {
-                            window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
-                            window.addEventListener('deviceorientation', handleOrientation, true);
-                        }
-                    }, 1500);
-                } else {
-                    // 直接监听普通方向事件
-                    window.addEventListener('deviceorientation', handleOrientation, true);
-                }
-
-                // 备用：如果长时间无数据，提示
-                setTimeout(() => {
-                    if (!hasHeading) {
-                        errorMsg.textContent = '未检测到方向数据。请确保设备有磁力计，并尝试在手机上使用。';
-                        errorMsg.style.display = 'block';
-                    }
-                }, 3000);
-            }
-        }
-
-        // --- 初始化 ---
-        function init() {
-            // 初始显示北 0°
-            updateDisplay(0);
-
-            // 按钮点击启动
-            startBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                startCompass();
-            });
-
-            // 页面加载后，如果是 Android 且支持绝对方向，可以自动启动？但为了兼容 iOS 的手势要求，统一通过按钮启动。
-            // 但用户可能希望自动启动，我们可以在非 iOS 上尝试自动启动，但需要避免权限问题。
-            // 为了简单，我们保持按钮启动，但为了体验，可以在非 iOS 上尝试自动监听（不请求权限）。
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            if (!isIOS) {
-                // 非 iOS 可以直接启动，但为了避免无用户手势导致的部分浏览器限制，我们仍然通过按钮点击。
-                // 为了更好的体验，可以自动启动，但需要确保用户已交互。我们可以延迟启动，但这里保持按钮。
-                // 如果希望自动启动，可以取消注释下面代码，但注意部分浏览器需要用户手势。
-                // startCompass(); // 但这样可能导致权限请求被忽略，所以不自动启动。
-            } else {
-                // iOS 显示按钮
-                startBtn.style.display = 'block';
-            }
-
-            // 如果浏览器支持 DeviceOrientationEvent 并且是 Android，我们可以隐藏按钮，自动启动？
-            // 为了简单，保留按钮，用户点击后启动。
-            // 但为了在桌面上测试，我们也可以模拟显示角度？不，这里只处理真实设备。
-            // 如果用户没有磁力计，会显示错误信息。
-        }
-
-        // 启动
-        init();
+        
+        <script>
+    (function () {
+        // Bound to 3s: a slow/blocked /geo must fall back to OSM quickly rather
+        // than leaving the map on its loader indefinitely.
+        var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 3000);
+        // window.COMPASS_GEO_URL is always unset in production (falls back to
+        // "/geo"). The local-only /local/esri-test harness sets it to point the
+        // shared fetch at a local force-China endpoint — NOT a production query
+        // param or header.
+        var geoUrl = window.COMPASS_GEO_URL || "/geo";
+        window.COMPASS_GEO = fetch(geoUrl, { cache: "no-cache", signal: ctrl ? ctrl.signal : undefined })
+            .then(function (r) { clearTimeout(timer); return r.json(); })
+            .then(function (d) { window.COMPASS_CHINA = !!(d && d.china); return d; })
+            .catch(function () { clearTimeout(timer); window.COMPASS_CHINA = false; return null; });
     })();
+
+    var OSM_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+    var ESRI_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}";
+
+    window.getBaseLayer = function (L, opts) {
+        opts = opts || {};
+        var realLayer = null, pendingMap = null, pendingHandlers = [];
+
+        // Create the real layer once /geo resolves, register any buffered
+        // handlers, THEN addTo(map) — so 'load' is bound before tiles load.
+        function flush() {
+            if (!realLayer || !pendingMap) return;
+            while (pendingHandlers.length) {
+                var h = pendingHandlers.shift();
+                realLayer.on(h.evt, h.fn);
+            }
+            realLayer.addTo(pendingMap);
+        }
+
+        window.COMPASS_GEO.then(function (d) {
+            var cn = !!(d && d.china);          // d === null on /geo failure/timeout → OSM
+            realLayer = L.tileLayer(
+                cn ? ESRI_URL : OSM_URL,
+                Object.assign({ attribution: cn ? "Tiles &copy; Esri" : "", maxZoom: 19 }, opts)
+            );
+            flush();
+        });
+
+        // Proxy: quacks like a tile layer for the two calls the map pages make.
+        return {
+            addTo: function (map) { pendingMap = map; flush(); return this; },
+            on: function (evt, fn) {
+                if (realLayer) realLayer.on(evt, fn);
+                else pendingHandlers.push({ evt: evt, fn: fn });
+                return this;
+            }
+        };
+    };
 </script>
 
-</body>
-</html>
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+        <link rel="preconnect" href="https://c.pubguru.net" crossorigin>
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+
+        
+        <link rel="preload" href="/fonts/icons/icomoon.woff" as="font" type="font/woff" crossorigin>
+
+            <link rel="preload" href="https://onlinecompass.net/images/compass.svg" as="image" fetchpriority="high" type="image/svg+xml">
+
+        
+        
+        
+        <script type="speculationrules">
+{
+    "prefetch": [
+        {
+            "where": { "href_matches": "/*" },
+            "eagerness": "conservative"
+        }
+    ]
+}
+</script>
+
+        
+        <style id="critical-css">
+@font-face{font-family:"icomoon";src:url("/fonts/icons/icomoon.woff") format("woff"),url("/fonts/icons/icomoon.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
+[class^="icon-"],[class*=" icon-"]{font-family:"icomoon"!important;speak:never;font-style:normal;font-weight:400;font-variant:normal;text-transform:none;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.icon-trash:before{content:"\e900"}.icon-edit:before{content:"\e901"}.icon-maghrib:before{content:"\e902"}.icon-asr:before{content:"\e903"}.icon-fajr:before{content:"\e904"}.icon-isha:before{content:"\e905"}.icon-midnight:before{content:"\e906"}.icon-dhuhr:before{content:"\e907"}.icon-unlock:before{content:"\e908"}.icon-world:before{content:"\e909"}.icon-lock:before{content:"\e90a"}.icon-sea_level:before{content:"\e90b"}.icon-sunset:before{content:"\e90c"}.icon-sunrise:before{content:"\e90d"}.icon-theme:before{content:"\e90e"}.icon-share-2:before{content:"\e90f"}.icon-compass:before{content:"\e910"}.icon-map:before{content:"\e911"}.icon-keyboard_arrow_down:before{content:"\e912"}.icon-clock:before{content:"\e913"}.icon-distance:before{content:"\e914"}.icon-noon:before{content:"\e915"}.icon-qibla-sunrise:before{content:"\e916"}.icon-qibla-sunset:before{content:"\e917"}.icon-city:before{content:"\e918"}.icon-gps_fixed:before{content:"\e919"}.icon-power:before{content:"\e91a"}.icon-stop-circle:before{content:"\e91b"}.icon-menu:before{content:"\e919"}.icon-close:before{content:"\e91c"}
+:root{--bg-color:#fff;--main-color:#5498e5;--text-color:#5a5a5a;--text-blue:#1f5fb4;--accent-color:#f8c74b;--info-color:#dc3545}
+*,*::before,*::after{box-sizing:border-box;padding:0;margin:0;outline:0;-webkit-tap-highlight-color:rgba(0,0,0,0);-webkit-tap-highlight-color:transparent}
+html{font-size:16px;scroll-behavior:smooth}
+html,body{overflow-x:hidden!important;width:100%!important;max-width:100%!important}
+body{font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:2;color:var(--text-color);min-height:100vh;background:var(--bg-color)}
+a{color:inherit!important;text-decoration:none;cursor:pointer}
+ul{list-style:none}
+label{cursor:pointer;user-select:none;font-size:.925rem}
+.skip-link{position:absolute;left:0;top:0;transform:translateY(-200%);z-index:1000;padding:8px 16px;background:#fff;color:var(--text-blue);border:2px solid var(--text-blue);border-radius:0 0 6px 0;text-decoration:none}
+.skip-link:focus,.skip-link:focus-visible{transform:translateY(0)}
+nav{width:100%;height:calc(60px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background-color:#2c6cb0;color:#fff}
+nav .holder{display:flex!important;flex-direction:row;align-items:center;justify-content:space-between}
+nav ul{display:flex;gap:12px;height:100%;align-items:center;justify-content:center;cursor:pointer}
+nav .logo{height:60px;width:max-content;display:grid;grid-template-columns:auto auto;align-items:center;justify-content:center;gap:8px}
+nav .logo a{display:flex;align-items:center;justify-content:center}
+nav .logo i{font-size:2rem}
+.holder{margin:0 auto;max-width:1124px;width:100%;display:flex;flex-direction:column;position:relative}
+.compass{position:relative;height:auto;aspect-ratio:1/1;width:50%;border-radius:50%;box-shadow:0 0 15px rgba(0,0,0,.2);margin:6% auto}
+/* .direction-readings (big magnetic/true tiles under the compass) reserves
+   its app.css box model from first paint: two ~74px rows + declination line.
+   Without this the block paints as unstyled stacked text, then reflows when
+   app.css arrives. .reading-value reserves the hero line (matches the
+   app.css min-height) so the placeholder -> real-heading swap causes no CLS. */
+.direction-readings{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;margin:-2% auto 1.5rem}
+.reading{display:grid;grid-template-columns:auto auto 1fr;align-items:center;column-gap:10px;width:min(100%,420px);padding:10px 16px;box-shadow:0 5px 25px rgba(0,0,0,.07);border-radius:12px;background:#fff}
+.reading-value{justify-self:end;font-size:2rem;font-weight:800;line-height:1.2;color:#333;font-variant-numeric:tabular-nums;white-space:nowrap;min-height:2.4rem}
+.compass .arrow{position:absolute;width:0;height:0;top:-20px;left:50%;transform:translateX(-50%);border-style:solid;border-width:30px 20px 0 20px;border-color:var(--accent-color) transparent transparent transparent;z-index:1}
+.compass>.compass-circle{position:absolute;width:100%;height:100%;top:50%;left:50%;transform:translate(-50%,-50%);background-position:center;background-repeat:no-repeat;background-size:contain;transition:none!important}
+/* .coordinates (deg/lat/long readout) and .manage (share/lock/theme) are
+   position:absolute in app.css. Without these rules they sit in normal flow
+   inside .holder before app.css loads, adding ~150-250px; the instant app.css
+   arrives they snap to absolute, .holder collapses, and the whole page jumps
+   up — this was the single biggest CLS source on the compass pages (lab CLS
+   0.626). Pinning them absolute from first paint removes the reflow entirely.
+   .colors is the theme dropdown (absolute, hidden until .active). Exact copy
+   of _general.scss:273-292 and 368-384 so there is no visual change. */
+.coordinates,.manage{position:absolute;left:0;top:5%;gap:4px;display:flex;flex-direction:column;align-items:flex-start}
+.manage{cursor:pointer;right:0;left:unset!important}
+.manage span{font-size:1.5rem}
+.colors{position:absolute;display:none}
+.right{display:flex;align-items:center;justify-content:center;font-size:1.8rem;cursor:pointer;position:relative;gap:16px}
+.right .blog{font-size:16px}
+.language,.change-theme{display:flex;align-items:center;justify-content:center;position:relative}
+.language{margin-left:24px}
+.change-theme{margin-top:10px}
+.lang{color:#000;font-size:.9rem;position:absolute;display:none;flex-direction:column;box-shadow:0 5px 25px rgba(0,0,0,.07);background:#fff;border-radius:4px;padding:4px 16px;top:40px;z-index:100;cursor:pointer;gap:8px;height:max-content;max-height:220px;overflow-y:scroll;user-select:none}
+.lang.active{display:block}
+.icon-theme{font-size:2rem!important}
+.start-btn{display:none}
+.mobile-menu{display:none;cursor:pointer}
+.mobile-menu .icon-close{display:none}
+.mobile-menu.active .icon-close{font-size:1.2rem;display:block}
+.mobile-menu.active .icon-menu{display:none}
+.mobile-menu+.language{margin-left:14px}
+.tools-menu{position:relative;display:flex;font-size:16px;gap:2rem}
+.tools-menu .icon-keyboard_arrow_down{display:initial}
+.tools-menu>li{z-index:70000;min-height:65px;display:flex;align-items:center;justify-content:center;gap:.25rem}
+.tools-menu ul{display:none}
+footer{width:100%;min-height:calc(60px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background-color:#2c6cb0;color:#fff;display:flex;align-items:center;justify-content:center}
+footer .holder{justify-content:space-between;flex-direction:row;font-size:.9rem}
+footer .holder ul{gap:16px;display:flex}
+/* LCP heading block (.content.meta h1) is the largest text element on the
+   location routes (where-am-i, what-city, what-country, what-is-my-zip-code,
+   what-is-my-address, what-county, what-state) and the homepage SEO section.
+   Without these rules the h1 paints at the UA default (2em / black) then
+   reflows to 1.25rem / blue once app.css arrives — delaying LCP and shifting
+   layout. Values are an exact copy of public/css/_general.scss so there is no
+   visual change, only earlier application. */
+.content{min-height:calc(100vh - 222px);margin:5% 0;box-shadow:0 5px 25px rgba(0,0,0,.07);border-radius:12px;padding:24px;text-align:justify;color:#3e3e3e}
+.content.meta{min-height:max-content!important;margin-bottom:0!important}
+.content.options{margin-bottom:0!important}
+.speed-page .content,.elevation-page .content{height:max-content;min-height:auto}
+.content h1{font-size:1.25rem}
+.content .blue{color:var(--text-blue)}
+/* Images inside .content cards. Without these, <picture> (inline, 0-height)
+   wraps an <img> that renders at its natural width (up to 640px) and bursts
+   outside the card before async app.css arrives — the "content box separated
+   from image" bug. Making <picture> block and constraining <img> matches
+   _general.scss:338-343 (desktop: max-width 70%) and _responsive.scss:154
+   (mobile: max-width 96%) so there is zero CLS. */
+.content picture{display:block;text-align:center}
+.content img{display:block;margin:24px auto;max-width:70%;height:auto}
+/* GPS coordinates page <img> (640x335, loading=lazy). The width/height attrs
+   should compute aspect-ratio automatically, but the lazy-load decode can
+   cause a brief 0-height state on the <picture> wrapper. Pinning the ratio
+   explicitly from first paint eliminates the residual 0.021 CLS entry. */
+.gps-page .content img[width="640"][height="335"]{aspect-ratio:640/335}
+@media(max-width:800px){
+html{font-size:14px}
+.compass{width:80%;margin-top:42%}
+nav .holder{padding:0 12px}
+.manage{position:relative!important;flex-direction:row;align-items:center;justify-content:center;gap:12px;margin-bottom:32px}
+.manage>span,.manage .change-theme{background-color:#fff;box-shadow:0 5px 25px rgba(0,0,0,.07);width:16%;aspect-ratio:1/1;margin-top:unset;border-radius:8px;display:flex;align-items:center;justify-content:center}
+footer{padding:8px 0 calc(8px + env(safe-area-inset-bottom))!important}
+footer p{text-align:center}
+footer .holder{align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.mobile-menu{display:block}
+.mobile-menu+.language{margin-left:8px}
+.tools-menu{display:none}
+.holder .content{min-height:max-content;margin:5% 0!important}
+.content img{max-width:96%}
+.track-page #map{aspect-ratio:16/15}
+/* .gps-page .holder.gps #map gets height:350px (overriding the aspect-ratio:16/8
+   above) on mobile once app.css arrives — reserving it here prevents ~185px of
+   shift on /gps-coordinates. Mirrors _responsive.scss:249-255. */
+.gps-page .holder.gps #map{height:350px;aspect-ratio:auto}
+}
+/* Ad-frame skeleton: reserve exact box-model from first paint so there is
+   zero height/visibility reflow when app.css arrives. The outer .ad-frame
+   holds the reserved min-height + responsive visibility + contain rules so
+   that AdSense's inline style overrides on the inner .ad-slot (which set
+   min-height:0!important; height:auto!important when an ad fails to fill)
+   cannot collapse the layout slot. Breakpoints are an exact copy of
+   _responsive.scss:474-560. */
+.ad-frame{display:block;width:100%;text-align:center;padding:.5rem;margin:0 auto;min-height:120px;contain:layout paint;overflow:hidden;position:relative}
+.ad-frame.ad-horizontal{min-height:120px}
+.ad-frame.ad-square{min-height:280px}
+.ad-frame.ad-all{display:block!important}
+.ad-slot{display:block;width:100%;position:relative}
+@media(max-width:767px){
+.ad-frame.ad-horizontal{min-height:250px}
+.ad-frame.ad-mobile{display:block!important}
+.ad-frame.ad-tablet{display:none}
+.ad-frame.ad-desktop{display:none}
+}
+@media(min-width:768px) and (max-width:1023px){
+.ad-frame.ad-mobile{display:none}
+.ad-frame.ad-tablet{display:block!important}
+.ad-frame.ad-desktop{display:none}
+}
+@media(min-width:1024px){
+.ad-frame.ad-mobile{display:none}
+.ad-frame.ad-tablet{display:none}
+.ad-frame.ad-desktop{display:block!important}
+/* Desktop horizontal ads served via PubGuru header-bidding +
+   AdSense commonly return 970x250 billboards (the old 120px reservation
+   only fit 728x90 / 970x90 leaderboards, so any billboard creative
+   pushed content by ~130px → CLS 0.64 on .ad-desktop.ad-horizontal,
+   90.2% poor). Reserving 250px covers the largest typical creative
+   and eliminates the shift regardless of which size fills. !important is
+   required: app.css (loaded after this inline block) still sets 120px on
+   desktop and wins on equal specificity, reintroducing the overflow. */
+.ad-frame.ad-horizontal{min-height:250px!important}
+}
+/* Static loading placeholder on the .ad-frame BACKGROUND (not a ::before
+   overlay). A background paints BEHIND the ad <ins>/iframe so it can never
+   cover the creative; the filled ad's opaque iframe covers it, and empty slots
+   show this gray box until the ad resolves. STATIC (no animation) = zero
+   paint/main-thread cost -> cannot affect INP (an animated background-position
+   version added mobile paint pressure). Cleared (background:none) the moment an
+   ad iframe appears (:has(iframe)) or the slot resolves. !important wins over
+   the committed app.css (no build step). */
+.ad-frame::before{display:none!important}
+.ad-frame{background:#eef1f5!important}
+.ad-frame:has(iframe),.ad-frame:has(.ad-slot.is-loaded),.ad-frame:has(ins[data-ad-status="filled"]),.ad-frame:has(ins[data-ad-status="unfilled"]){background:none!important}
+/* #map container reservation. #map holds only absolutely-positioned children
+   (search box, leaflet-loader), so its intrinsic height is 0 before app.css.
+   When app.css arrives, .track-page #map gets aspect-ratio:16/8, .elevation-page
+   #map gets height:400px, and mobile .track-page #map gets aspect-ratio:16/15.
+   Reserving these values here prevents content below the map from being pushed
+   down — mirrors _general.scss:1307-1311, _general.scss:1198-1201, and
+   _responsive.scss:48-50. */
+#map{width:100%;aspect-ratio:16/8;position:relative;background:#ddd}
+.elevation-page #map{height:400px;aspect-ratio:auto}
+/* Location-services toggle (homepage + location/map routes). #switch is
+   75x40 in _general.scss:504 and .toggle_icon has margin-bottom:50px;
+   without these the toggle paints as plain OFF/ON text then reflows. */
+.toggle_icon{align-items:center;justify-content:center;margin-bottom:50px;flex-direction:row;gap:8px}
+.line-page .toggle_icon,.circlemap-page .toggle_icon{margin-top:2rem;padding-bottom:.5rem}
+#switch{width:75px;height:40px;contain:layout style}
+.toggle{position:relative;border:2px solid #444249;border-radius:20px;box-sizing:border-box}
+.toggle-button,.toggle-text-off,.toggle-text-on,.glow-comp{position:absolute}
+.toggle-button{top:3px;width:65px;bottom:3px;right:3px;background-color:#444249;border-radius:23px;transform:scaleX(.4308);transform-origin:left center}
+.toggle-text-on{top:0;bottom:0;left:0;right:0;line-height:36px;text-align:center;font-size:18px;color:transparent}
+.toggle-text-off{top:0;bottom:0;right:6px;line-height:36px;text-align:center;font-size:14px;font-weight:bold;color:#444249}
+.glow-comp{opacity:0;top:10px;bottom:10px;left:10px;right:10px;border-radius:6px}
+/* .gps-info card reservation. The card renders 8 <p> rows whose <span> values
+   are filled asynchronously by setInfoData() after the nominatim reverse-
+   geocode resolves. Until then the card is ~64px shorter (zip column row +
+   address wrap row), and when the fetch resolves the card grows and pushes
+   the map + ad slots below — lab CLS 0.216 on /what-is-my-zip-code. Pin the
+   populated height here so the shift never happens. Mirrors _general.scss
+   (420px) and _responsive.scss (380px on mobile). */
+.gps-info{display:flex;flex-direction:column;gap:1rem;min-height:420px}
+@media(max-width:800px){.gps-info{min-height:380px}}
+/* .info-text (location-services hint shown above ad slots on GPS / location
+   routes). Without this rule it renders at UA default styling on first paint,
+   then gains margin-top:-2.7rem + margin-bottom:1.7rem + bold + red from async
+   app.css — the vertical delta cascades into a CLS shift on the slots below.
+   Mirrors _general.scss:841-854 so there is no visual change, only earlier
+   application. */
+.info-text{margin-top:-2.7rem;margin-bottom:1.7rem;width:100%;text-align:center;color:var(--info-color);font-size:1rem;font-weight:bold;display:none}
+.info-text.active{display:block}
+</style>
+
+        
+        <link rel="stylesheet" href="https://onlinecompass.net/css/app.css?v=1792360566">
+
+            <style>.compass .compass-circle{background-image:url("https://onlinecompass.net/images/compass.svg");background-position:center;background-repeat:no-repeat;background-size:contain;}</style>
+
+        
+        <link rel="preconnect" href="https://consent.cookiebot.com" crossorigin>
+<link rel="preload" href="https://consent.cookiebot.com/uc.js" as="script">
+<script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="23c00000-47bc-4b9f-9c79-76cf1194cb4
