@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>东南西北 · 罗盘</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #0b0f1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', 'Noto Sans', system-ui, -apple-system, sans-serif;
+      padding: 12px;
+    }
+
+    .compass-card {
+      background: radial-gradient(circle at 30% 25%, #1e2a3a, #0a0e14);
+      border-radius: 56px;
+      padding: 28px 24px 24px 24px;
+      box-shadow: 0 25px 40px rgba(0, 0, 0, 0.8), inset 0 1px 4px rgba(255, 255, 255, 0.08);
+      border: 1px solid #2e3b4e;
+    }
+
+    .compass {
+      position: relative;
+      width: min(78vw, 78vh, 400px);
+      height: min(78vw, 78vh, 400px);
+      margin: 0 auto;
+      border-radius: 50%;
+      background: #121a24;
+      box-shadow: 
+        inset 0 12px 28px rgba(0, 0, 0, 0.9),
+        inset 0 -6px 12px rgba(70, 130, 200, 0.2),
+        0 0 0 6px #0e1219,
+        0 0 0 8px #2a3648,
+        0 20px 40px rgba(0, 0, 0, 0.7);
+      touch-action: none;
+    }
+
+    .dial {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      transition: transform 0.08s ease-out;
+    }
+
+    /* 刻度环 */
+    .ticks {
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      background-image: repeating-conic-gradient(
+        from 0deg,
+        #6f8fb0 0deg 0.6deg,
+        transparent 0.6deg 3deg
+      );
+      mask-image: radial-gradient(circle, transparent 58%, black 60%, black 97%, transparent 100%);
+      -webkit-mask-image: radial-gradient(circle, transparent 58%, black 60%, black 97%, transparent 100%);
+      opacity: 0.5;
+    }
+
+    /* 主方向标记 */
+    .cardinal {
+      position: absolute;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 8vw, 2.4rem);
+      color: #b7d0ea;
+      text-shadow: 0 2px 8px rgba(0, 180, 255, 0.5);
+      letter-spacing: 2px;
+      transition: all 0.1s;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.2em;
+      height: 2.2em;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* 方向具体位置 */
+    .north { transform: translate(-50%, -50%) rotate(0deg) translateY(-42%) translateY(-130px) rotate(0deg); }
+    .east  { transform: translate(-50%, -50%) rotate(90deg) translateY(-42%) translateY(-130px) rotate(-90deg); }
+    .south { transform: translate(-50%, -50%) rotate(180deg) translateY(-42%) translateY(-130px) rotate(-180deg); }
+    .west  { transform: translate(-50%, -50%) rotate(270deg) translateY(-42%) translateY(-130px) rotate(-270deg); }
+
+    /* 实际定位使用绝对角度，为了响应式用百分比更好 */
+    .cardinal-wrapper {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+    }
+
+    .dir {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      font-size: clamp(1.5rem, 7vw, 2.6rem);
+      font-weight: 800;
+      color: #d9ecff;
+      text-shadow: 0 0 12px #2e9aff, 0 0 24px #0055aa;
+      width: 1.8em;
+      height: 1.8em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-origin: center;
+      transition: color 0.2s;
+      background: rgba(10, 20, 30, 0.6);
+      border-radius: 50%;
+      backdrop-filter: blur(2px);
+      box-shadow: 0 0 12px rgba(0, 160, 255, 0.3);
+    }
+
+    /* 使用绝对角度定位 —— 以圆心为基准 */
+    .dir-n {
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #ff7b7b;
+      text-shadow: 0 0 16px #ff3b3b;
+      border: 1px solid rgba(255, 80, 80, 0.5);
+    }
+
+    .dir-e {
+      left: 88%;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7bc8ff;
+      border: 1px solid rgba(80, 180, 255, 0.5);
+    }
+
+    .dir-s {
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #8effb0;
+      border: 1px solid rgba(80, 255, 140, 0.4);
+    }
+
+    .dir-w {
+      right: 88%;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #ffd966;
+      border: 1px solid rgba(255, 220, 100, 0.5);
+    }
+
+    /* 中心指针 */
+    .needle {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4%;
+      height: 38%;
+      background: linear-gradient(to top, #ff3b3b 0%, #ff9f4b 60%, #ffde9e 100%);
+      border-radius: 40% 40% 20% 20% / 60% 60% 20% 20%;
+      transform-origin: bottom center;
+      transform: translate(-50%, -100%) rotate(0deg);
+      box-shadow: 0 0 16px #ff4d4d, 0 0 6px #ffaa33;
+      z-index: 20;
+      transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+      border: 1px solid #ffd58c;
+    }
+
+    .needle::after {
+      content: "";
+      position: absolute;
+      bottom: -8%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160%;
+      height: 12%;
+      background: #c0d0e0;
+      border-radius: 50%;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+    }
+
+    /* 反向指针（尾部） */
+    .needle-tail {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 3.5%;
+      height: 22%;
+      background: linear-gradient(to bottom, #4a6f8a, #1e2f40);
+      border-radius: 20% 20% 40% 40% / 20% 20% 60% 60%;
+      transform-origin: top center;
+      transform: translate(-50%, 0%) rotate(0deg);
+      box-shadow: 0 0 8px #1a2c3d;
+      z-index: 15;
+      transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    }
+
+    .center-dot {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 8%;
+      height: 8%;
+      background: #cddcec;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 0 6px #0b1118, 0 0 22px #aad0ff;
+      z-index: 30;
+    }
+
+    .bearing-display {
+      margin-top: 20px;
+      text-align: center;
+      color: #b8d4f0;
+      font-size: clamp(1rem, 4vw, 1.6rem);
+      font-weight: 500;
+      background: #0c121c;
+      padding: 12px 24px;
+      border-radius: 60px;
+      box-shadow: inset 0 2px 8px #000000, 0 4px 12px #00000060;
+      letter-spacing: 2px;
+      border: 1px solid #253544;
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .bearing-display span {
+      color: #e1f0ff;
+      font-weight: 700;
+      min-width: 4em;
+    }
+
+    .hint {
+      color: #5f7d9c;
+      font-size: 0.8rem;
+      text-align: center;
+      margin-top: 12px;
+      opacity: 0.8;
+    }
+
+    /* 适配小屏手机 */
+    @media (max-width: 420px) {
+      .compass-card {
+        padding: 20px 16px 18px 16px;
+        border-radius: 44px;
+      }
+      .dir {
+        font-size: 1.7rem;
+        width: 1.8em;
+        height: 1.8em;
+      }
+      .dir-n { top: 9%; }
+      .dir-s { bottom: 9%; }
+      .dir-e { left: 86%; }
+      .dir-w { right: 86%; }
+    }
+
+    @media (max-height: 620px) {
+      .compass {
+        width: min(68vw, 68vh, 320px);
+        height: min(68vw, 68vh, 320px);
+      }
+      .dir { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="compass-card">
+  <div class="compass" id="compass">
+    <!-- 静态刻度 -->
+    <div class="ticks"></div>
+
+    <!-- 可旋转表盘: 包含东南西北文字 -->
+    <div class="dial" id="dial">
+      <!-- 东南西北 使用绝对定位，随表盘旋转 -->
+      <div class="dir dir-n" data-dir="n">北</div>
+      <div class="dir dir-e" data-dir="e">东</div>
+      <div class="dir dir-s" data-dir="s">南</div>
+      <div class="dir dir-w" data-dir="w">西</div>
+    </div>
+
+    <!-- 指针 (红色头指向北，尾部指向南) 旋转相反方向 -->
+    <div class="needle" id="needle"></div>
+    <div class="needle-tail" id="needleTail"></div>
+    <div class="center-dot"></div>
+  </div>
+
+  <div class="bearing-display">
+    <span id="bearingValue">0°</span>
+    <span id="directionLabel">北</span>
+  </div>
+  <div class="hint">🧭 转动手机 · 罗盘自动指向北方 (东南西北)</div>
+</div>
+
+<script>
+  (function() {
+    const dial = document.getElementById('dial');
+    const needle = document.getElementById('needle');
+    const needleTail = document.getElementById('needleTail');
+    const bearingValue = document.getElementById('bearingValue');
+    const directionLabel = document.getElementById('directionLabel');
+
+    // 方向名称 (基于角度)
+    const DIR_NAMES = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
+
+    // 当前传感器角度 (alpha) 以及平滑值
+    let currentAlpha = 0;
+    let smoothAlpha = 0;
+    const SMOOTHING = 0.35;   // 平滑系数，越小越平滑但延迟稍大
+
+    // 更新UI (角度单位: 度)
+    function updateCompass(alpha) {
+      // alpha 是设备绕 Z 轴的旋转角 (0-360) ，0 表示指向北方 (取决于设备方向)
+      // 但我们希望: 当设备指向北方时, 罗盘N在上方, 指针朝上(0°)
+      // 而在许多设备上, alpha=0 表示设备顶端指向北, 但不同的浏览器/设备可能有差异.
+      // 为了直观: 让指针旋转 -alpha 度? 我们分析: 
+      // 我们希望表盘(东南西北)固定不动? 不，我们希望指针指向北。
+      // 更好的方式: 表盘旋转 -alpha 度, 指针保持朝上? 但视觉上指针也是旋转的? 
+      // 常见设计: 表盘固定，指针旋转 -alpha (即指向北方). 但那样东南西北文字不转动.
+      // 或者: 表盘旋转 alpha，指针不转? 这样东南西北文字会转动，指针指向固定方向? 不好.
+      // 更自然的罗盘: 指针总是指向北方(即屏幕上方), 所以指针旋转 -alpha 度? 
+      // 但是要让指针的红色端永远指向北方，那么指针的角度应该为 -alpha 度（从屏幕上方顺时针）。
+      // 同时东南西北文字固定在表盘上并随着设备旋转而反向旋转, 这样看起来更像真实罗盘.
+      
+      // 所以设计: 
+      // - 表盘 (包含东南西北) 旋转 -alpha 度 (相对于屏幕), 使得文字始终相对于世界坐标正确.
+      // - 指针保持竖直朝上? 不对，指针应该总是指向北方。如果指针竖直朝上，那就意味着屏幕上方就是北方，但设备旋转后北方并不在屏幕上方。
+      // 因此指针需要旋转 -alpha 度来指向实际北方。
+      // 但是这样指针和文字旋转角度相同? 如果表盘旋转 -alpha, 指针也旋转 -alpha, 那么指针相对于表盘固定?
+      // 不对: 表盘和指针都旋转 -alpha, 它们相对静止, 那么指针相对于表盘固定指向某个方向, 但罗盘文字会旋转, 指针也旋转, 视觉上指针总是对着同一个文字(比如北), 但那个文字会转动。
+      // 我们想要的效果是: 指针的红色端指向北方, 而东南西北文字固定不动? 不，文字也应该跟随表盘旋转，这样整个罗盘看起来在转动。
+      // 实际上标准指南针: 表盘和指针是一体的? 我们简化: 让整个罗盘(表盘+指针)一起旋转 -alpha 度, 这样指针相对于屏幕旋转, 但指针与表盘的相对位置不变。
+      // 这意味着指针总是指向表盘上的北方文字。但是表盘上的北方文字会随着设备旋转而移动，从而指针指向的北方文字实际上总是在世界北方方向。
+      // 这就是我们想要的！我们不需要分别旋转指针和表盘，我们可以将指针和表盘放在同一个旋转容器里！
+      
+      // 但为了更清晰的视觉效果，我们可以将指针和表盘作为一组旋转? 
+      // 由于我们已经有分开的指针和表盘，可以同步旋转它们，或者用父容器旋转。
+      
+      // 但是目前指针单独控制，表盘单独控制。如果两者旋转角度相同，那么指针相对于表盘固定，指针将永远指向表盘的“北”字。这实际上是对的，因为表盘的北字在旋转后始终指向北方。
+      // 所以我们让 dial 和 needle 都旋转 -alpha 度。但指针的初始方向是向上，所以旋转 -alpha 后，指针指向实际北方。
+      
+      // 不过原代码中指针初始方向是向上(0deg)，表盘初始方向正常。如果我们旋转表盘-alpha, 那么表盘上的北字旋转-alpha，而指针也旋转-alpha，指针头部会指向表盘上的北字。很好。
+      
+      // 但要注意: needle 的 transform 使用的是 translate(-50%, -100%) rotate(...) ，我们需要设置旋转角度。
+      // 同时 needleTail 也应该旋转同样的角度，但它是从中心向下，所以它也会指向南方。
+      
+      // 但是由于指针有 translate，我们需要小心 transform 顺序。简单起见，我们直接设置 needle 的 transform: translate(-50%, -100%) rotate(deg)
+      // 对于 needleTail: translate(-50%, 0%) rotate(deg) 因为它是从中心向下延伸。
+      
+      // 旋转角度应该是多少？设备alpha=0时表示设备顶部指向北方，我们希望表盘上的北字在屏幕上方（即0度位置），指针也指向屏幕上方。
+      // 因此如果alpha = 0，旋转角度为0。如果alpha = 90 (设备顶部指向东方)，为了仍然让指针指向北方，我们需要将表盘旋转 -90度，这样北字会出现在屏幕左侧? 
+      // 让我们测试: 如果alpha=90 (设备顶部朝东), 北方在设备的左侧，即屏幕的左侧。此时旋转表盘 -90 度会使原本在上方的北字移动到左侧吗? 
+      // 旋转 -90度是逆时针旋转90度，原本上方的点(0,-1)会移动到左侧(-1,0)。是的，所以北方出现在左侧，正确!
+      // 指针旋转 -90度也会指向左侧。完美。
+      
+      // 所以旋转角度 = -alpha 度。
+      
+      // 但是某些设备alpha方向可能相反，我们需要检查。通常 alpha 是顺时针增加。如果发现方向反了，可以改为 alpha。
+      // 为了直观，我们先用 -alpha，并在注释中说明。
+      
+      const rot = -alpha; // 旋转角度
+      
+      // 表盘旋转
+      dial.style.transform = `rotate(${rot}deg)`;
+      
+      // 指针旋转: 指针头部本来向上(0deg)，旋转 rot 度
+      needle.style.transform = `translate(-50%, -100%) rotate(${rot}deg)`;
+      needleTail.style.transform = `translate(-50%, 0%) rotate(${rot}deg)`;
+      
+      // 更新度数显示 (使用 alpha 值, 但需转换为标准方位角: 北=0, 东=90, 南=180, 西=270)
+      // 但是我们的 alpha 是设备旋转角, 显示应为设备指向的方向? 
+      // 实际上我们想显示的是设备朝向的方位角。如果设备顶端指向北，则为0度；指向东为90度。
+      // 但是根据我们旋转表盘的方式，当alpha=0时，设备顶端指向北；表盘北字在上方。显示的方位角应该是alpha吗？不，应该是设备顶端相对于北方的角度，即alpha? 
+      // 通常设备朝向角 (heading) = alpha 或 360-alpha 取决于定义。为了简单，我们显示 alpha 作为朝向角。
+      // 但为了让用户看到“北”对应的角度是0，我们需要计算真正的方位角。如果我们定义北方为0度，那么屏幕朝上（设备顶端）的方向角就是 alpha? 假设alpha=0时指向北，alpha=90时指向东。
+      // 那么方位角 = alpha。但是我们指针旋转了 -alpha，意味着当alpha=90时，指针指向左侧(西?)，这显然不对。刚才分析有误!
+      
+      // 重新思考: 我们想让指针的红色端指向北方。如果alpha=0，设备顶端朝北，北方在屏幕上方，指针应该竖直向上(0度旋转)，正确。
+      // 如果alpha=90，设备顶端朝东，那么北方在设备的左侧。要让指针指向北方，指针应该指向左侧，也就是旋转 -90 度（逆时针90度）。所以指针旋转 -alpha 度，正确。
+      // 但此时方位角(设备朝向)是90度(东)。我们应该显示方位角 = alpha 还是 360-alpha? 
+      // 通常 alpha 是设备绕Z轴旋转的角度，顺时针为正。所以如果alpha=90，设备顶端指向东，那么方位角就是90度。
+      // 所以显示 bearingValue 为 Math.round(alpha) 度，同时方向标签根据alpha计算。
+      // 但是指针旋转 -alpha 度，意味着指针指向北方，这没问题。
+      
+      // 所以旋转角度 = -alpha 度是正确的。显示角度 = alpha 度。
+      
+      // 方向标签: 根据alpha计算方位。0-22.5 北, 22.5-67.5 东北, 等等。
+      const normalizedAlpha = (alpha % 360 + 360) % 360;
+      const dirIndex = Math.round(normalizedAlpha / 45) % 8;
+      const dirName = DIR_NAMES[dirIndex];
+      
+      bearingValue.textContent = Math.round(normalizedAlpha) + '°';
+      directionLabel.textContent = dirName;
+    }
+    
+    // 平滑更新
+    function smoothUpdate(targetAlpha) {
+      // 处理角度环绕，避免跳动
+      let diff = targetAlpha - smoothAlpha;
+      // 将差值规范到 -180..180 范围
+      if (diff > 180) diff -= 360;
+      if (diff < -180) diff += 360;
+      
+      smoothAlpha += diff * SMOOTHING;
+      // 保持 smoothAlpha 在 0-360
+      smoothAlpha = (smoothAlpha % 360 + 360) % 360;
+      
+      // 使用平滑后的角度更新UI (但显示真实角度还是平滑角度? 显示平滑角度更好看)
+      // 但平滑角度会导致度数显示滞后，我们可以用真实角度显示数值，但指针使用平滑角度?
+      // 为了让指针稳定，指针使用平滑角度，但数字显示实际角度。
+      // 所以我们分离: 指针旋转用 smoothAlpha, 显示用真实alpha。
+      
+      // 但为了最简单且响应迅速，我们直接用当前alpha更新指针，但有平滑。
+      // 修改: 指针和表盘使用平滑后的角度，而显示用真实角度。
+      
+      const rot = -smoothAlpha;
+      
+      dial.style.transform = `rotate(${rot}deg)`;
+      needle.style.transform = `translate(-50%, -100%) rotate(${rot}deg)`;
+      needleTail.style.transform = `translate(-50%, 0%) rotate(${rot}deg)`;
+      
+      // 显示真实角度 (用目标角度, 使数值准确)
+      const realAlpha = (targetAlpha % 360 + 360) % 360;
+      const dirIndex = Math.round(realAlpha / 45) % 8;
+      const dirName = DIR_NAMES[dirIndex];
+      
+      bearingValue.textContent = Math.round(realAlpha) + '°';
+      directionLabel.textContent = dirName;
+    }
+
+    // 处理设备方向
+    function handleOrientation(event) {
+      // alpha: 0-360, 绕Z轴旋转
+      let alpha = event.alpha;
+      
+      // 某些设备可能返回 null
+      if (alpha === null || alpha === undefined) {
+        // 尝试使用 webkitCompassHeading (iOS)
+        if (event.webkitCompassHeading !== undefined) {
+          // webkitCompassHeading 是相对于磁北的朝向角，0=北，90=东...
+          // 这里我们转换一下: 如果使用 webkitCompassHeading, 它已经是我们想显示的角度。
+          // 但为了保持一致性，我们仍然需要让指针指向北方。
+          // 如果 webkitCompassHeading 为 0 (指向北), 指针应该朝上，即旋转0度。
+          // 如果 webkitCompassHeading 为 90 (指向东), 北方在左侧，指针应旋转 -90度。
+          // 所以我们可以直接用 heading 作为 alpha? 不对, 如果 heading=0, 我们希望 rot=0; heading=90, rot=-90。
+          // 那么 rot = -heading。这样我们仍然可以用 alpha = heading?
+          // 但是我们的逻辑是 rot = -alpha, 所以如果 alpha = heading, 那么 rot = -heading, 正确。
+          // 所以我们可以把 heading 当作 alpha 传入。
+          const heading = event.webkitCompassHeading;
+          if (typeof heading === 'number') {
+            currentAlpha = heading;
+            smoothUpdate(currentAlpha);
+            return;
+          }
+        }
+        // 如果没有 alpha 也没有 compass heading, 可能不支持
+        return;
+      }
+      
+      // 某些浏览器 alpha 可能范围是 0-360 或者 -180 到 180
+      // 确保在 0-360
+      let normalizedAlpha = (alpha % 360 + 360) % 360;
+      currentAlpha = normalizedAlpha;
+      
+      // 有些设备 alpha 是逆时针？需要校准。可添加一个简单的校准偏移，但这里按标准。
+      // 按标准: alpha 0 = 北, 90 = 东 (设备顶部指向东)
+      // 所以我们直接用。
+      
+      smoothUpdate(currentAlpha);
+    }
+
+    // 请求权限（iOS 13+ 需要用户手势）
+    function requestPermission() {
+      if (typeof DeviceOrientationEvent !== 'undefined' && 
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation, true);
+            } else {
+              alert('需要方向传感器权限才能显示罗盘。请刷新页面并允许。');
+            }
+          })
+          .catch(console.error);
+      } else {
+        // 非 iOS 或不需要权限
+        window.addEventListener('deviceorientation', handleOrientation, true);
+      }
+    }
+
+    // 如果浏览器不支持 deviceorientation，显示提示
+    if (!window.DeviceOrientationEvent) {
+      bearingValue.textContent = '--';
+      directionLabel.textContent = '不支持';
+      document.querySelector('.hint').textContent = '⚠️ 您的设备或浏览器不支持方向传感器';
+    } else {
+      // 需要用户手势来触发权限请求 (特别是 iOS)
+      const startCompass = () => {
+        requestPermission();
+        // 移除监听避免重复请求
+        window.removeEventListener('click', startCompass);
+        window.removeEventListener('touchstart', startCompass);
+      };
+      
+      // 如果有 requestPermission 方法，则需要用户交互
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        window.addEventListener('click', startCompass);
+        window.addEventListener('touchstart', startCompass);
+        // 也尝试自动添加监听（某些安卓可能不需要手势）
+        // 但为了保险，也直接尝试添加监听（如果允许）
+        try {
+          window.addEventListener('deviceorientation', handleOrientation, true);
+        } catch (e) {}
+      } else {
+        // 直接监听
+        window.addEventListener('deviceorientation', handleOrientation, true);
+      }
+    }
+
+    // 如果设备没有方向数据，显示初始状态
+    // 初始化显示
+    bearingValue.textContent = '0°';
+    directionLabel.textContent = '北';
+    // 初始旋转为0
+    dial.style.transform = 'rotate(0deg)';
+    needle.style.transform = 'translate(-50%, -100%) rotate(0deg)';
+    needleTail.style.transform = 'translate(-50%, 0%) rotate(0deg)';
+    
+    // 为了安卓 Web 更好的兼容，添加一个 fallback: 如果不支持传感器，可以用触摸旋转? 但需求是罗盘功能，所以不用。
+    // 添加一个简单的点击重新请求权限 (方便iOS)
+    document.body.addEventListener('touchstart', function once() {
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then(state => {
+          if (state === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation, true);
+          }
+        });
+      }
+      document.body.removeEventListener('touchstart', once);
+    }, { once: true });
+    
+  })();
+</script>
+</body>
+</html>
