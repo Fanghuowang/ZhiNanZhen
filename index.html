@@ -3,228 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>简易指南针</title>
+    <title>在线指南针 - 免费实时指南针，快速找到正北方向</title>
     <style>
-        * {
+        @font-face {
+            font-family: "icomoon";
+            src: url("https://onlinecompass.net/fonts/icons/icomoon.woff") format("woff");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        [class^="icon-"], [class*=" icon-"] {
+            font-family: "icomoon" !important;
+            speak: never;
+            font-style: normal;
+            font-weight: 400;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .icon-compass:before { content: "\e910"; }
+        
+        :root {
+            --bg-color: #fff;
+            --main-color: #5498e5;
+            --text-color: #5a5a5a;
+            --text-blue: #1f5fb4;
+            --accent-color: #f8c74b;
+            --info-color: #dc3545;
+        }
+        *, *::before, *::after {
             box-sizing: border-box;
-            margin: 0;
             padding: 0;
-            user-select: none;
+            margin: 0;
+            outline: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+        html, body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            line-height: 2;
+            color: var(--text-color);
+            min-height: 100vh;
+            background: var(--bg-color);
+        }
+        a {
+            color: inherit !important;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        ul {
+            list-style: none;
+        }
+        nav {
+            width: 100%;
+            height: 60px;
+            background-color: #2c6cb0;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        nav .holder {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        nav .logo i {
+            font-size: 2rem;
+        }
+        .holder {
+            margin: 0 auto;
+            max-width: 1124px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
-        body {
-            background-color: #0f172a;
-            color: white;
-            font-family: system-ui, -apple-system, sans-serif;
+        /* 指南针核心样式 */
+        .compass {
+            position: relative;
+            height: auto;
+            aspect-ratio: 1/1;
+            width: 80%;
+            max-width: 380px;
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(0,0,0,0.15);
+            margin: 40px auto;
+            background: #fdfdfd;
+            border: 4px solid #eef1f5;
+        }
+
+        /* 顶部固定黄色指示箭头 */
+        .compass .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-style: solid;
+            border-width: 32px 20px 0 20px;
+            border-color: var(--accent-color) transparent transparent transparent;
+            z-index: 10;
+        }
+
+        /* 旋转的表盘 */
+        .compass > .compass-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            transition: none !important;
+            /* 这里生成一个基础的带东南西北和刻度线的表盘背景 */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="%23e0e0e0" stroke-width="0.5"/><text x="50" y="15" font-size="7" font-weight="bold" fill="%23dc3545" text-anchor="middle">北</text><text x="50" y="92" font-size="7" font-weight="bold" fill="%235a5a5a" text-anchor="middle">南</text><text x="15" y="53" font-size="7" font-weight="bold" fill="%235a5a5a" text-anchor="middle">西</text><text x="85" y="53" font-size="7" font-weight="bold" fill="%235a5a5a" text-anchor="middle">东</text>');
+        }
+
+        /* 中心固定圆点 */
+        .compass::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border: 2px solid var(--main-color);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+        }
+
+        /* 实时角度显示大卡片 */
+        .direction-readings {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        /* 指南针主表盘 */
-        .compass-container {
-            position: relative;
-            width: 320px;
-            height: 320px;
-            border-radius: 50%;
-            background: #1e293b;
-            border: 4px solid #334155;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* 旋转的刻度盘 */
-        .dial {
-            position: relative;
+            gap: 10px;
             width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            transition: transform 0.1s linear;
+            margin: -10px auto 30px;
         }
-
-        /* 方位文字 东南西北 */
-        .direction {
-            position: absolute;
-            font-size: 24px;
-            font-weight: bold;
-            width: 44px;
-            height: 44px;
+        .reading {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: #0f172a;
+            justify-content: space-between;
+            width: min(100%, 420px);
+            padding: 16px 24px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid #eef1f5;
+        }
+        .reading-chip {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            border: 2px solid #334155;
+            margin-right: 12px;
         }
-
-        /* 北为红色突出显示 */
-        .north { top: 8px; left: 50%; transform: translateX(-50%); color: #ef4444; border-color: #ef4444; }
-        .east  { right: 8px; top: 50%; transform: translateY(-50%); color: #cbd5e1; }
-        .south { bottom: 8px; left: 50%; transform: translateX(-50%); color: #cbd5e1; }
-        .west  { left: 8px; top: 50%; transform: translateY(-50%); color: #cbd5e1; }
-
-        /* 刻度线 */
-        .tick {
-            position: absolute;
-            width: 2px;
-            height: 8px;
-            background: #64748b;
-            top: 20px;
-            left: 50%;
-            transform-origin: 50% 140px; /* 320/2 - 20 */
+        .reading-chip.magnetic {
+            background: var(--accent-color);
         }
-
-        .tick.major {
-            height: 14px;
-            width: 3px;
-            background: #94a3b8;
-            top: 16px;
-            transform-origin: 50% 144px;
+        .reading-label {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            flex: 1;
         }
-
-        /* 中心固定指针 (指向上方) */
-        .pointer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 4px;
-            height: 110px;
-            background: linear-gradient(to bottom, #ef4444, #ef4444 40%, transparent 40%);
-            transform: translate(-50%, -100%);
-            z-index: 10;
-            border-radius: 4px;
-            pointer-events: none;
-        }
-
-        /* 中心圆点 */
-        .center-dot {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 20;
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-
-        /* 底部角度显示 */
-        .angle-display {
-            margin-top: 40px;
-            font-size: 32px;
-            font-weight: 700;
-            color: #38bdf8;
+        .reading-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: var(--main-color);
             font-variant-numeric: tabular-nums;
-            background: #1e293b;
-            padding: 10px 30px;
-            border-radius: 50px;
-            border: 1px solid #334155;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
     </style>
 </head>
-<body>
+<body style="direction: ltr">
 
-    <div class="compass-container">
-        <div class="dial" id="dial">
-            <div class="direction north">北</div>
-            <div class="direction east">东</div>
-            <div class="direction south">南</div>
-            <div class="direction west">西</div>
-            <!-- 刻度将通过JS生成 -->
+    <nav>
+        <div class="holder">
+            <div class="logo">
+                <a href="#"><i class="icon-compass" aria-hidden="true"></i></a>
+            </div>
         </div>
-        <!-- 顶部固定指针 -->
-        <div class="pointer"></div>
-        <div class="center-dot"></div>
+    </nav>
+
+    <div class="holder">
+        <div class="compass" id="compass">
+            <!-- 顶部固定指针 -->
+            <div class="arrow"></div>
+            <!-- 旋转的表盘 -->
+            <div class="compass-circle" id="compassCircle"></div>
+        </div>
+
+        <div class="direction-readings">
+            <div class="reading">
+                <div style="display:flex; align-items:center;">
+                    <span class="reading-chip magnetic" aria-hidden="true"></span>
+                    <span class="reading-label">当前方向</span>
+                </div>
+                <span class="reading-value" id="magneticValue">0.0°</span>
+            </div>
+        </div>
     </div>
 
-    <div class="angle-display" id="angleDisplay">0°</div>
-
     <script>
-        // 生成表盘刻度线
-        const dial = document.getElementById('dial');
-        for (let i = 0; i < 360; i += 15) {
-            const tick = document.createElement('div');
-            tick.className = 'tick' + (i % 90 === 0 ? ' major' : '');
-            tick.style.transform = `translateX(-50%) rotate(${i}deg)`;
-            dial.appendChild(tick);
-        }
-
-        const angleDisplay = document.getElementById('angleDisplay');
-        let currentHeading = 0;
-        let isActive = false;
-
-        // 核心更新逻辑
-        function updateCompass(alpha) {
-            if (alpha === null || isNaN(alpha)) return;
-            
-            // 转换为0-360度的航向角
-            let heading = (360 - alpha) % 360;
-            if (heading < 0) heading += 360;
-            
-            currentHeading = heading;
-
-            // 旋转表盘 (因为指针是固定的，表盘反向旋转)
-            // 修正：表盘应顺时针旋转，以反映手机顶部指向的方向
-            // 原逻辑：手机平放，顶部指向北(0°)，alpha约0，表盘转0°
-            // 顶部指向东(90°)，alpha约270，表盘应转-90°即270°？我们这里让表盘转 -heading 度
-            dial.style.transform = `rotate(${-heading}deg)`;
-            
-            // 更新角度数字
-            angleDisplay.textContent = `${heading.toFixed(1)}°`;
-            
-            if (!isActive) {
-                isActive = true;
-            }
-        }
-
-        // 绑定方向传感器事件
-        function startSensors() {
-            // 优先使用绝对方向传感器 (Android Chrome 支持良好)
-            if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-                window.addEventListener('deviceorientation', handleOrientation, true);
-            }
-        }
-
-        function handleOrientation(event) {
-            let alpha = null;
-            
-            // 如果设备支持 webkitCompassHeading (iOS / 部分浏览器)
-            if (event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null) {
-                alpha = 360 - event.webkitCompassHeading; // 转换为标准 alpha 角度
-            } else if (event.alpha !== null) {
-                alpha = event.alpha;
-            }
-
-            if (alpha !== null) {
-                requestAnimationFrame(() => updateCompass(alpha));
-            }
-        }
-
-        // 自动启动
-        startSensors();
-
-        // 部分 Android 浏览器需要用户交互才能解锁传感器，添加一个静默监听
-        // 如果首次加载没有反应，用户触摸屏幕后会自动激活
-        document.body.addEventListener('touchstart', () => {
-            startSensors();
-        }, { once: true });
+        const compassCircle = document.getElementById("compassCircle");
+        const magneticValue = document.getElementById("magneticValue");
         
-        // 兜底：如果浏览器不允许自动启动，显示提示（但按照要求，我们不添加额外按钮）
-        setTimeout(() => {
-            if (!isActive) {
-                // 尝试强制触发一次，或者只是等待用户触摸
-                // 现代 Android Chrome 通常会自动放行
+        let pendingFrame = false;
+        let latestCompass = 0;
+        let hasHeading = false;
+        let fallbackTimer = null;
+
+        // 更新UI及表盘旋转
+        function onCompassFrame() {
+            if (!hasHeading) return;
+            
+            // 修复箭头位置：表盘实际是根据设备旋转反向旋转的
+            // 因为表盘上的“北”标记会随表盘转动，而手机顶端固定指着屏幕上方
+            compassCircle.style.transform = `translate(-50%, -50%) rotate(${-latestCompass}deg)`;
+            
+            // 更新角度文字显示
+            magneticValue.textContent = `${latestCompass.toFixed(1)}°`;
+        }
+
+        function applyHeading(heading) {
+            // 平滑处理角度，防止在 0 和 360 之间跳跃
+            latestCompass = heading;
+            hasHeading = true;
+            
+            if (pendingFrame) return;
+            pendingFrame = true;
+            requestAnimationFrame(function () {
+                pendingFrame = false;
+                onCompassFrame();
+            });
+        }
+
+        // 绝对方向传感器 (Android Chrome / Edge)
+        function handlerAbsolute(e) {
+            if (typeof e.alpha !== "number") return;
+            
+            if (fallbackTimer !== null) {
+                clearTimeout(fallbackTimer);
+                fallbackTimer = null;
             }
-        }, 1000);
+            window.removeEventListener("deviceorientation", handlerFallback, true);
+            
+            // e.alpha 从 0 到 360 顺时针旋转（0表示北，90表示东）。
+            // 我们需要计算手机顶端指向的绝对角度
+            applyHeading(Math.abs(e.alpha - 360));
+        }
+
+        // 备用传感器 (iOS / 部分旧版 Android)
+        function handlerFallback(e) {
+            if (typeof e.webkitCompassHeading === "number") {
+                applyHeading(e.webkitCompassHeading);
+                return;
+            }
+            if (typeof e.alpha !== "number") return;
+            applyHeading(Math.abs(e.alpha - 360));
+        }
+
+        function registerFallback() {
+            fallbackTimer = null;
+            window.addEventListener("deviceorientation", handlerFallback, true);
+        }
+
+        // 自动启动逻辑 (专为 Android 优化)
+        function initCompass() {
+            // Android 浏览器通常支持 deviceorientationabsolute，且不需要用户点击授权
+            window.addEventListener("deviceorientationabsolute", handlerAbsolute, true);
+            // 1.5秒后如果没有绝对方向数据，则回退到通用传感器
+            fallbackTimer = setTimeout(registerFallback, 1500);
+        }
+
+        // 页面加载后自动运行
+        window.addEventListener("DOMContentLoaded", () => {
+            initCompass();
+        });
+
+        // 如果部分浏览器需要交互才解锁传感器，添加一个静默监听触发
+        document.body.addEventListener('touchstart', () => {
+            if (!hasHeading) initCompass();
+        }, { once: true });
+
     </script>
 </body>
 </html>
