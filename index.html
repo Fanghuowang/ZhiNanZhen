@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
-  <title>Compass</title>
+  <title>东南西北 · 罗盘</title>
   <style>
     :root {
       --bg: #000000;
@@ -12,7 +12,6 @@
       --text-secondary: #8e8e93;
       --dial-bg: #1c1c1e;
       --north-color: #ff3b30;
-      --accent: #0a84ff;
     }
 
     * {
@@ -26,16 +25,16 @@
     body {
       background-color: var(--bg);
       color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      padding: 20px;
     }
 
+    /* Top Bar */
     .top-bar {
       position: absolute;
       top: max(24px, env(safe-area-inset-top));
@@ -56,6 +55,7 @@
       -webkit-backdrop-filter: blur(10px);
     }
 
+    /* Compass Container */
     .compass-container {
       position: relative;
       width: min(85vw, 85vh, 380px);
@@ -70,6 +70,7 @@
       position: absolute;
       inset: 0;
       border-radius: 50%;
+      transition: transform 0.1s linear;
       will-change: transform;
     }
 
@@ -81,6 +82,7 @@
       box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
     }
 
+    /* SVG Ticks */
     .ticks-svg {
       position: absolute;
       inset: 0;
@@ -90,6 +92,7 @@
       overflow: visible;
     }
 
+    /* Cardinal Characters (东南西北) */
     .cardinal-container {
       position: absolute;
       inset: 0;
@@ -109,10 +112,11 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1.4rem;
-      transform-origin: 0 145px;
+      font-size: 1.6rem;
+      transform-origin: 0 145px; /* Radius mapping */
     }
     
+    /* Rotate outward, then un-rotate the text to keep it upright */
     .cardinal.n { transform: rotate(0deg); color: var(--north-color); }
     .cardinal.e { transform: rotate(90deg); color: var(--text-primary); }
     .cardinal.s { transform: rotate(180deg); color: var(--text-primary); }
@@ -123,32 +127,13 @@
       transform: rotate(calc(-1 * var(--angle)));
     }
 
-    .degree-mark {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 30px;
-      height: 30px;
-      margin-left: -15px;
-      margin-top: -15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      transform-origin: 0 135px;
-    }
-    
-    .degree-mark span {
-      transform: rotate(calc(-1 * var(--angle)));
-    }
-
+    /* Center Needle */
     .needle-container {
       position: absolute;
       inset: 0;
       border-radius: 50%;
       pointer-events: none;
+      transition: transform 0.1s linear;
       will-change: transform;
     }
 
@@ -193,6 +178,7 @@
       z-index: 20;
     }
 
+    /* Bottom Info */
     .info-panel {
       text-align: center;
       width: 100%;
@@ -216,7 +202,6 @@
       color: var(--text-secondary);
       text-transform: uppercase;
       margin-bottom: 20px;
-      transition: color 0.3s;
     }
 
     .meta-grid {
@@ -250,6 +235,7 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* Toast */
     .toast {
       position: fixed;
       bottom: max(30px, env(safe-area-inset-bottom));
@@ -273,6 +259,7 @@
       opacity: 1;
     }
 
+    /* Permission Overlay */
     .permission-overlay {
       position: fixed;
       inset: 0;
@@ -304,7 +291,7 @@
     }
 
     .btn-primary {
-      background: var(--accent);
+      background: #0a84ff;
       color: #fff;
       border: none;
       padding: 14px 32px;
@@ -351,7 +338,7 @@
 
   <div class="info-panel" id="infoPanel">
     <div class="heading-text" id="headingText">0°</div>
-    <div class="direction-text" id="directionText">N</div>
+    <div class="direction-text" id="directionText">北</div>
     
     <div class="meta-grid">
       <div class="meta-item">
@@ -380,8 +367,8 @@
     const toast = document.getElementById('toast');
     const ticksSvg = document.getElementById('ticksSvg');
 
-    let targetHeading = 0;
     let currentHeading = 0;
+    let targetHeading = 0;
     let isMetric = true;
     let currentAltitude = 0;
     let currentSpeed = 0;
@@ -389,9 +376,8 @@
     let currentLon = 0;
     let accuracyLevel = 'Unknown';
     let isTracking = false;
-    let lastSensorTime = 0;
 
-    // 1. Generate SVG Ticks and Degree Numbers
+    // 1. Generate SVG Ticks (Exactly like the reference site, but cleaner)
     function generateTicks() {
       let html = '';
       for (let i = 0; i < 360; i += 2) {
@@ -400,14 +386,14 @@
         
         const angle = (i - 90) * (Math.PI / 180);
         const outerRadius = 90;
-        const innerRadius = isMajor ? 82 : (isMedium ? 85 : 87);
+        const innerRadius = isMajor ? 80 : (isMedium ? 85 : 88);
         
         const x1 = 100 + outerRadius * Math.cos(angle);
         const y1 = 100 + outerRadius * Math.sin(angle);
         const x2 = 100 + innerRadius * Math.cos(angle);
         const y2 = 100 + innerRadius * Math.sin(angle);
         
-        const strokeWidth = isMajor ? 2 : (isMedium ? 1.5 : 1);
+        const strokeWidth = isMajor ? 2.5 : (isMedium ? 1.5 : 0.8);
         const strokeColor = isMajor ? '#ffffff' : (isMedium ? '#a0a0a5' : '#5c5c5e');
         
         html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-linecap="round" />`;
@@ -416,8 +402,8 @@
       // Add degree numbers correctly rotated
       [30, 60, 120, 150, 210, 240, 300, 330].forEach(deg => {
         const rad = (deg - 90) * (Math.PI / 180);
-        const x = 100 + 72 * Math.cos(rad);
-        const y = 100 + 72 * Math.sin(rad);
+        const x = 100 + 70 * Math.cos(rad);
+        const y = 100 + 70 * Math.sin(rad);
         
         html += `
           <text x="${x}" y="${y}" fill="#8e8e93" font-size="7" font-weight="500" text-anchor="middle" dominant-baseline="middle" 
@@ -433,34 +419,29 @@
     const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
     const directionsEn = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
-    // 2. Animation & Smoothing Loop
+    // 2. Smooth Animation Loop
     let lastRenderTime = performance.now();
-    
     function render(now) {
       const dt = now - lastRenderTime;
       lastRenderTime = now;
 
       if (isTracking) {
-        // Calculate shortest path
         let diff = targetHeading - currentHeading;
         if (diff > 180) diff -= 360;
         if (diff < -180) diff += 360;
         
-        // Very gentle smoothing to eliminate magnetometer jitter
-        // Adjust the 0.05 factor to make it faster/slower (lower = smoother)
-        currentHeading += diff * 0.08;
+        // Smooth lerp
+        currentHeading += diff * 0.1;
         currentHeading = (currentHeading + 360) % 360;
         
-        // Apply CSS transforms
         dialWrapper.style.transform = `rotate(${-currentHeading}deg)`;
         needleContainer.style.transform = `rotate(${currentHeading}deg)`;
 
-        // Update UI Text
         const displayDeg = Math.round(currentHeading);
         headingText.textContent = `${displayDeg}°`;
         
         const dirIdx = Math.round(displayDeg / 45) % 8;
-        directionText.textContent = `${directionsEn[dirIdx]} · ${directions[dirIdx]}`;
+        directionText.textContent = `${directions[dirIdx]}`;
         
         if (dirIdx === 0) {
           directionText.style.color = 'var(--north-color)';
@@ -468,36 +449,34 @@
           directionText.style.color = 'var(--text-secondary)';
         }
       }
-      
       requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
 
-    // 3. Sensor Handling
-    let isAbsolute = false;
-    function handleOrientation(event) {
-      let alpha = event.alpha;
+    // 3. Sensor Handling (Using the exact logic from your reference site)
+    function manageCompass(e) {
+      let heading = 0;
       
-      if (event.webkitCompassHeading !== undefined) {
-        alpha = event.webkitCompassHeading;
-        isAbsolute = true;
-      } else if (event.absolute) {
-        isAbsolute = true;
-      }
-      
-      if (alpha === null || alpha === undefined) return;
-
-      // Update target heading
-      if (event.webkitCompassHeading !== undefined) {
-        targetHeading = alpha;
+      // Logic from your source: iOS uses webkitCompassHeading, Android uses alpha
+      if (e.webkitCompassHeading) {
+        // iOS: webkitCompassHeading is 0 when facing North.
+        heading = e.webkitCompassHeading;
+      } else if (e.absolute && e.alpha !== null) {
+        // Android / Chrome absolute orientation: alpha is 0 when facing North (sometimes needs inversion)
+        heading = 360 - e.alpha;
+      } else if (e.alpha !== null) {
+        // Fallback for relative sensors
+        heading = 360 - e.alpha;
       } else {
-        // Standard alpha is CCW from North, convert to CW
-        targetHeading = (360 - alpha) % 360;
+        return; // No data
       }
+
+      // Update the target
+      targetHeading = (heading + 360) % 360;
 
       if (!isTracking) {
         isTracking = true;
-        currentHeading = targetHeading; // Instantly snap on first read
+        currentHeading = targetHeading; // Snap to initial position
         permOverlay.classList.add('hidden');
       }
     }
@@ -582,22 +561,15 @@
       }, 2500);
     }
 
-    // 6. Initialization & Permissions
+    // 6. Initialization
     function initSensors() {
-      // Compass
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(state => {
-            if (state === 'granted') {
-              window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-              window.addEventListener('deviceorientation', handleOrientation, true);
-            }
-          })
-          .catch(console.error);
+      // Exact event listeners from your reference file
+      if (["iPad Simulator","iPhone Simulator","iPod Simulator","iPad","iPhone","iPod"].includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document)) {
+        window.addEventListener("deviceorientation", manageCompass, true);
       } else {
-        // Android and others
-        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-        window.addEventListener('deviceorientation', handleOrientation, true);
+        window.addEventListener("deviceorientationabsolute", manageCompass, true);
+        // Fallback for some Android devices that only fire deviceorientation
+        window.addEventListener("deviceorientation", manageCompass, true);
       }
 
       // GPS
@@ -611,18 +583,31 @@
     }
 
     grantBtn.addEventListener('click', () => {
-      permOverlay.classList.add('hidden');
-      initSensors();
+      // Request permission for iOS 13+
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(state => {
+            if (state === 'granted') {
+              initSensors();
+              permOverlay.classList.add('hidden');
+            }
+          })
+          .catch(console.error);
+      } else {
+        initSensors();
+        permOverlay.classList.add('hidden');
+      }
     });
 
-    // Generate SVG on load
+    // Generate visuals on load
     generateTicks();
     
-    // Auto-start on Android (or browsers without permission prompt)
+    // Auto-start on Android (browsers that don't need explicit permission)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
       initSensors();
       permOverlay.classList.add('hidden');
     }
+
   </script>
 </body>
 </html>
