@@ -268,11 +268,11 @@
       </div>
     </div>
 
-    <!-- Calibration Slider -->
+    <!-- Calibration Slider (Default set to 11) -->
     <div class="calibration-box">
       <span>校准 (Calibrate)</span>
-      <input type="range" id="calibrationSlider" min="-180" max="180" value="0">
-      <span id="offsetValue">0°</span>
+      <input type="range" id="calibrationSlider" min="-180" max="180" value="11">
+      <span id="offsetValue">11°</span>
     </div>
   </div>
 
@@ -290,9 +290,11 @@
     let targetHeading = 0;
     let displayHeading = 0; 
     let isTracking = false;
-    let manualOffset = 0;
+    
+    // Set default offset to 11
+    let manualOffset = 11;
 
-    // Slider logic to fix the 20-degree offset
+    // Slider logic to fix the offset dynamically
     calibrationSlider.addEventListener('input', (e) => {
       manualOffset = parseInt(e.target.value);
       offsetValue.textContent = `${manualOffset}°`;
@@ -355,7 +357,6 @@
         if (diff > 180) diff -= 360;
         if (diff < -180) diff += 360;
         
-        // Super smooth animation
         displayHeading += diff * 0.15;
         displayHeading = (displayHeading + 360) % 360;
         
@@ -383,13 +384,12 @@
       if (e.webkitCompassHeading) {
         rawHeading = e.webkitCompassHeading;
       } else if (e.alpha !== null && e.alpha !== undefined) {
-        // Android: Invert alpha for clockwise heading
         rawHeading = 360 - e.alpha;
       } else {
         return;
       }
 
-      // Apply the manual calibration offset
+      // Apply the manual calibration offset (default 11)
       rawHeading = (rawHeading + manualOffset + 360) % 360;
 
       if (!isTracking) {
@@ -404,10 +404,8 @@
       if (diff > 180) diff -= 360;
       if (diff < -180) diff += 360;
 
-      // Filter out tiny jitters (less than 1.5 degrees)
       if (Math.abs(diff) < 1.5) return;
 
-      // Heavy smoothing
       targetHeading += diff * 0.15;
       targetHeading = (targetHeading + 360) % 360;
     }
