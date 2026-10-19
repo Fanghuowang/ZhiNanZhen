@@ -11,9 +11,7 @@
       --text-primary: #ffffff;
       --text-secondary: #8e8e93;
       --dial-bg: #1c1c1e;
-      --dial-border: #38383a;
-      --tick-color: #ffffff;
-      --north-color: #ff3b30; /* iOS Red */
+      --north-color: #ff3b30;
       --accent: #0a84ff;
     }
 
@@ -38,13 +36,10 @@
       padding: 20px;
     }
 
-    /* Top Bar */
     .top-bar {
       position: absolute;
       top: max(24px, env(safe-area-inset-top));
       right: 24px;
-      display: flex;
-      gap: 12px;
       z-index: 100;
     }
 
@@ -59,14 +54,8 @@
       cursor: pointer;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      transition: background 0.2s;
     }
 
-    .unit-toggle:active {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Compass Container */
     .compass-container {
       position: relative;
       width: min(85vw, 85vh, 380px);
@@ -77,12 +66,10 @@
       margin-bottom: 40px;
     }
 
-    /* Outer Ring & Ticks */
     .dial-wrapper {
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      transition: transform 0.1s linear;
       will-change: transform;
     }
 
@@ -94,7 +81,6 @@
       box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
     }
 
-    /* Radial Ticks using SVG for precision */
     .ticks-svg {
       position: absolute;
       inset: 0;
@@ -104,7 +90,6 @@
       overflow: visible;
     }
 
-    /* Cardinal Characters (东南西北) */
     .cardinal-container {
       position: absolute;
       inset: 0;
@@ -125,10 +110,9 @@
       justify-content: center;
       font-weight: 700;
       font-size: 1.4rem;
-      transform-origin: 0 145px; /* Radius mapping */
+      transform-origin: 0 145px;
     }
     
-    /* Rotate outward, then un-rotate the text to keep it upright */
     .cardinal.n { transform: rotate(0deg); color: var(--north-color); }
     .cardinal.e { transform: rotate(90deg); color: var(--text-primary); }
     .cardinal.s { transform: rotate(180deg); color: var(--text-primary); }
@@ -139,7 +123,6 @@
       transform: rotate(calc(-1 * var(--angle)));
     }
 
-    /* Degree Numbers */
     .degree-mark {
       position: absolute;
       left: 50%;
@@ -161,13 +144,11 @@
       transform: rotate(calc(-1 * var(--angle)));
     }
 
-    /* Center Needle */
     .needle-container {
       position: absolute;
       inset: 0;
       border-radius: 50%;
       pointer-events: none;
-      transition: transform 0.1s linear;
       will-change: transform;
     }
 
@@ -212,7 +193,6 @@
       z-index: 20;
     }
 
-    /* Bottom Info */
     .info-panel {
       text-align: center;
       width: 100%;
@@ -236,6 +216,7 @@
       color: var(--text-secondary);
       text-transform: uppercase;
       margin-bottom: 20px;
+      transition: color 0.3s;
     }
 
     .meta-grid {
@@ -269,7 +250,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Toast Notification */
     .toast {
       position: fixed;
       bottom: max(30px, env(safe-area-inset-bottom));
@@ -293,7 +273,6 @@
       opacity: 1;
     }
 
-    /* Permission Overlay */
     .permission-overlay {
       position: fixed;
       inset: 0;
@@ -336,53 +315,33 @@
       width: 100%;
       max-width: 280px;
     }
-
-    .btn-primary:active {
-      opacity: 0.8;
-    }
   </style>
 </head>
 <body>
 
-  <!-- Top Bar -->
   <div class="top-bar">
     <button class="unit-toggle" id="unitToggle">Metric</button>
   </div>
 
-  <!-- Permission Overlay (for iOS & Android permission) -->
   <div class="permission-overlay" id="permOverlay">
     <h2>Compass Access</h2>
     <p>This app requires access to your device's compass and location to provide accurate headings and coordinates.</p>
     <button class="btn-primary" id="grantBtn">Enable Sensors</button>
   </div>
 
-  <!-- Compass -->
   <div class="compass-container" id="compassContainer">
-    <!-- Rotating Dial -->
     <div class="dial-wrapper" id="dialWrapper">
       <div class="dial-bg"></div>
+      <svg class="ticks-svg" viewBox="0 0 200 200" id="ticksSvg"></svg>
       
-      <!-- SVG Ticks -->
-      <svg class="ticks-svg" viewBox="0 0 200 200" id="ticksSvg">
-        <!-- Generated via JS -->
-      </svg>
-
-      <!-- Cardinal Directions -->
       <div class="cardinal-container">
         <div class="cardinal n"><span style="--angle: 0deg">北</span></div>
         <div class="cardinal e"><span style="--angle: 90deg">东</span></div>
         <div class="cardinal s"><span style="--angle: 180deg">南</span></div>
         <div class="cardinal w"><span style="--angle: 270deg">西</span></div>
       </div>
-
-      <!-- Degree Numbers -->
-      <div class="degree-mark" id="deg0"><span style="--angle: 0deg">0°</span></div>
-      <div class="degree-mark" id="deg90"><span style="--angle: 90deg">90°</span></div>
-      <div class="degree-mark" id="deg180"><span style="--angle: 180deg">180°</span></div>
-      <div class="degree-mark" id="deg270"><span style="--angle: 270deg">270°</span></div>
     </div>
 
-    <!-- Static Center Needle (Counter-rotates) -->
     <div class="needle-container" id="needleContainer">
       <div class="needle"></div>
       <div class="needle-tail"></div>
@@ -390,7 +349,6 @@
     </div>
   </div>
 
-  <!-- Info Panel -->
   <div class="info-panel" id="infoPanel">
     <div class="heading-text" id="headingText">0°</div>
     <div class="direction-text" id="directionText">N</div>
@@ -407,11 +365,9 @@
     </div>
   </div>
 
-  <!-- Toast -->
   <div class="toast" id="toast">Copied to clipboard</div>
 
   <script>
-    // UI Elements
     const dialWrapper = document.getElementById('dialWrapper');
     const needleContainer = document.getElementById('needleContainer');
     const headingText = document.getElementById('headingText');
@@ -424,9 +380,8 @@
     const toast = document.getElementById('toast');
     const ticksSvg = document.getElementById('ticksSvg');
 
-    // State
-    let currentHeading = 0;
     let targetHeading = 0;
+    let currentHeading = 0;
     let isMetric = true;
     let currentAltitude = 0;
     let currentSpeed = 0;
@@ -435,16 +390,14 @@
     let accuracyLevel = 'Unknown';
     let isTracking = false;
     let lastSensorTime = 0;
-    let sensorTimeout;
 
-    // Generate SVG Ticks
+    // 1. Generate SVG Ticks and Degree Numbers
     function generateTicks() {
       let html = '';
       for (let i = 0; i < 360; i += 2) {
         const isMajor = i % 30 === 0;
         const isMedium = i % 10 === 0;
         
-        // Convert to radians (0 is Top, so -90)
         const angle = (i - 90) * (Math.PI / 180);
         const outerRadius = 90;
         const innerRadius = isMajor ? 82 : (isMedium ? 85 : 87);
@@ -460,69 +413,55 @@
         html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-linecap="round" />`;
       }
       
-      // Add secondary degree numbers (30, 60, 120, etc.)
+      // Add degree numbers correctly rotated
       [30, 60, 120, 150, 210, 240, 300, 330].forEach(deg => {
-        const angle = deg;
+        const rad = (deg - 90) * (Math.PI / 180);
+        const x = 100 + 72 * Math.cos(rad);
+        const y = 100 + 72 * Math.sin(rad);
+        
         html += `
-          <text x="100" y="30" fill="#8e8e93" font-size="8" font-weight="500" text-anchor="middle" dominant-baseline="middle" 
-                transform="rotate(${angle} 100 100) translate(0, -5) rotate(${-angle} 100 30)" 
-                style="transform-origin: 100px 100px;">
+          <text x="${x}" y="${y}" fill="#8e8e93" font-size="7" font-weight="500" text-anchor="middle" dominant-baseline="middle" 
+                transform="rotate(${deg} ${x} ${y}) translate(0, 0) rotate(${-deg} ${x} ${y})">
             ${deg}°
           </text>
         `;
       });
 
       ticksSvg.innerHTML = html;
-      
-      // Fix positioning of dynamic text inside SVG
-      const texts = ticksSvg.querySelectorAll('text');
-      texts.forEach(t => {
-        // ensure text unrotates properly
-        const match = t.getAttribute('transform').match(/rotate\((-?\d+)/);
-        if(match) {
-           // The simple positioning above handles it.
-        }
-      });
     }
 
-    // Card direction mappings
     const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
     const directionsEn = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
-    // Smooth Animation Loop
+    // 2. Animation & Smoothing Loop
     let lastRenderTime = performance.now();
+    
     function render(now) {
       const dt = now - lastRenderTime;
       lastRenderTime = now;
 
       if (isTracking) {
-        // Calculate shortest path for smooth rotation
+        // Calculate shortest path
         let diff = targetHeading - currentHeading;
         if (diff > 180) diff -= 360;
         if (diff < -180) diff += 360;
         
-        // Lerp based on time to be framerate independent
-        const lerpFactor = 1 - Math.pow(0.001, dt / 1000);
-        currentHeading += diff * lerpFactor;
-        
-        // Normalize
+        // Very gentle smoothing to eliminate magnetometer jitter
+        // Adjust the 0.05 factor to make it faster/slower (lower = smoother)
+        currentHeading += diff * 0.08;
         currentHeading = (currentHeading + 360) % 360;
         
         // Apply CSS transforms
-        // Dial rotates WITH the heading (so North text moves to actual North)
         dialWrapper.style.transform = `rotate(${-currentHeading}deg)`;
-        
-        // Needle rotates OPPOSITE to always point North on screen
         needleContainer.style.transform = `rotate(${currentHeading}deg)`;
 
-        // Update Text
+        // Update UI Text
         const displayDeg = Math.round(currentHeading);
         headingText.textContent = `${displayDeg}°`;
         
         const dirIdx = Math.round(displayDeg / 45) % 8;
         directionText.textContent = `${directionsEn[dirIdx]} · ${directions[dirIdx]}`;
         
-        // Color N red when pointing roughly North
         if (dirIdx === 0) {
           directionText.style.color = 'var(--north-color)';
         } else {
@@ -534,45 +473,36 @@
     }
     requestAnimationFrame(render);
 
-    // Sensor Handlers
+    // 3. Sensor Handling
+    let isAbsolute = false;
     function handleOrientation(event) {
       let alpha = event.alpha;
       
-      // iOS heading is webkitCompassHeading (0-360, clockwise from North)
       if (event.webkitCompassHeading !== undefined) {
         alpha = event.webkitCompassHeading;
+        isAbsolute = true;
+      } else if (event.absolute) {
+        isAbsolute = true;
       }
       
       if (alpha === null || alpha === undefined) return;
 
-      // If using webkitCompassHeading, it represents the device heading directly.
-      // If using standard alpha, it's typically the rotation counter-clockwise? 
-      // Standard alpha: 0 is North, 90 is West (CCW). We need to invert it for standard compass behavior.
-      // Actually, in most Android browsers, alpha is CCW from North.
-      // We want targetHeading to be CW from North.
+      // Update target heading
       if (event.webkitCompassHeading !== undefined) {
-          targetHeading = alpha;
+        targetHeading = alpha;
       } else {
-          // Fallback for standard alpha: convert CCW to CW
-          targetHeading = (360 - alpha) % 360; 
+        // Standard alpha is CCW from North, convert to CW
+        targetHeading = (360 - alpha) % 360;
       }
 
-      // Handle sensor timeout
-      lastSensorTime = Date.now();
       if (!isTracking) {
         isTracking = true;
-        currentHeading = targetHeading;
+        currentHeading = targetHeading; // Instantly snap on first read
         permOverlay.classList.add('hidden');
       }
-
-      clearTimeout(sensorTimeout);
-      sensorTimeout = setTimeout(() => {
-        isTracking = false;
-        directionText.textContent = 'No Sensor';
-      }, 2000);
     }
 
-    // Geolocation Handlers
+    // 4. GPS Handling
     function handleLocation(position) {
       const { latitude, longitude, altitude, speed, accuracy } = position.coords;
       currentLat = latitude;
@@ -582,11 +512,9 @@
       else if (accuracy < 50) accuracyLevel = 'Medium';
       else accuracyLevel = 'Low';
 
-      // Speed
-      currentSpeed = speed || 0; // m/s
+      currentSpeed = speed || 0;
       updateSpeedDisplay();
 
-      // Altitude
       if (altitude !== null && altitude !== undefined) {
         currentAltitude = altitude;
         updateAltitudeDisplay();
@@ -595,8 +523,6 @@
 
     function handleLocationError(err) {
       console.warn('Geolocation error:', err);
-      currentLat = 0;
-      currentLon = 0;
     }
 
     function updateSpeedDisplay() {
@@ -615,7 +541,7 @@
       }
     }
 
-    // Unit Toggle
+    // 5. Interactions
     unitToggle.addEventListener('click', () => {
       isMetric = !isMetric;
       unitToggle.textContent = isMetric ? 'Metric' : 'Imperial';
@@ -623,19 +549,18 @@
       if (currentAltitude !== null) updateAltitudeDisplay();
     });
 
-    // Copy Coordinates on Long Press
     let pressTimer;
     const infoPanel = document.getElementById('infoPanel');
 
     function startPress() {
       pressTimer = setTimeout(() => {
-        const coordsText = `Lat: ${currentLat.toFixed(6)}, Lon: ${currentLon.toFixed(6)}\nHeading: ${Math.round(currentHeading)}° (Accuracy: ${accuracyLevel})`;
+        const coordsText = `Lat: ${currentLat.toFixed(6)}, Lon: ${currentLon.toFixed(6)}\nHeading: ${Math.round(currentHeading)}° (Confidence: ${accuracyLevel})`;
         navigator.clipboard.writeText(coordsText).then(() => {
           showToast('Coordinates & Heading Copied!');
         }).catch(() => {
           showToast('Failed to copy');
         });
-      }, 600); // 600ms long press
+      }, 600);
     }
 
     function cancelPress() {
@@ -657,26 +582,25 @@
       }, 2500);
     }
 
-    // Initialize Sensors with Permissions
+    // 6. Initialization & Permissions
     function initSensors() {
-      // Request Compass
+      // Compass
       if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
           .then(state => {
             if (state === 'granted') {
               window.addEventListener('deviceorientationabsolute', handleOrientation, true);
               window.addEventListener('deviceorientation', handleOrientation, true);
-            } else {
-              alert('Compass permission denied.');
             }
           })
           .catch(console.error);
       } else {
+        // Android and others
         window.addEventListener('deviceorientationabsolute', handleOrientation, true);
         window.addEventListener('deviceorientation', handleOrientation, true);
       }
 
-      // Request Location
+      // GPS
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(handleLocation, handleLocationError, {
           enableHighAccuracy: true,
@@ -691,15 +615,14 @@
       initSensors();
     });
 
-    // Generate visuals on load
+    // Generate SVG on load
     generateTicks();
     
-    // Auto-init if on Android (no permission needed)
+    // Auto-start on Android (or browsers without permission prompt)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
       initSensors();
       permOverlay.classList.add('hidden');
     }
-
   </script>
 </body>
 </html>
