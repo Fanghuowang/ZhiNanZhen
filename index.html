@@ -41,7 +41,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 20px;
+      margin-bottom: 40px;
     }
 
     .dial-wrapper {
@@ -172,32 +172,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* CALIBRATION SLIDER CSS */
-    .calibration-box {
-      margin-top: 15px;
-      background: #1c1c1e;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-    }
-    
-    .calibration-box input {
-      flex: 1;
-      accent-color: #ff3b30;
-    }
-    
-    #offsetValue {
-      min-width: 35px;
-      text-align: right;
-      color: #fff;
-      font-weight: bold;
-    }
-
     .permission-overlay {
       position: fixed;
       inset: 0;
@@ -267,13 +241,6 @@
         <span class="meta-value" id="speedValue">0 km/h</span>
       </div>
     </div>
-
-    <!-- Calibration Slider (Default set to 11) -->
-    <div class="calibration-box">
-      <span>校准 (Calibrate)</span>
-      <input type="range" id="calibrationSlider" min="-180" max="180" value="11">
-      <span id="offsetValue">11°</span>
-    </div>
   </div>
 
   <script>
@@ -284,21 +251,10 @@
     const permOverlay = document.getElementById('permOverlay');
     const grantBtn = document.getElementById('grantBtn');
     const compassSvg = document.getElementById('compassSvg');
-    const calibrationSlider = document.getElementById('calibrationSlider');
-    const offsetValue = document.getElementById('offsetValue');
 
     let targetHeading = 0;
     let displayHeading = 0; 
     let isTracking = false;
-    
-    // Set default offset to 11
-    let manualOffset = 11;
-
-    // Slider logic to fix the offset dynamically
-    calibrationSlider.addEventListener('input', (e) => {
-      manualOffset = parseInt(e.target.value);
-      offsetValue.textContent = `${manualOffset}°`;
-    });
 
     function buildCompass() {
       let html = '';
@@ -357,6 +313,7 @@
         if (diff > 180) diff -= 360;
         if (diff < -180) diff += 360;
         
+        // Smooth visual animation
         displayHeading += diff * 0.15;
         displayHeading = (displayHeading + 360) % 360;
         
@@ -378,46 +335,41 @@
       requestAnimationFrame(render);
     }
 
-    function handleOrientation(e) {
-      let rawHeading = 0;
-
+    // EXACT LOGIC FROM REFERENCE SITE
+    function manageCompass(e) {
+      let absoluteHeading = 0;
+      
+      // 1. Get raw heading
       if (e.webkitCompassHeading) {
-        rawHeading = e.webkitCompassHeading;
+        absoluteHeading = e.webkitCompassHeading - 180;
       } else if (e.alpha !== null && e.alpha !== undefined) {
-        rawHeading = 360 - e.alpha;
+        absoluteHeading = 180 + e.alpha;
       } else {
         return;
       }
 
-      // Apply the manual calibration offset (default 11)
-      rawHeading = (rawHeading + manualOffset + 360) % 360;
+      // 2. Apply their exact math offset
+      absoluteHeading -= 180;
+      if (absoluteHeading > 360) absoluteHeading -= 360;
+      if (absoluteHeading < 0) absoluteHeading += 360;
+
+      targetHeading = absoluteHeading;
 
       if (!isTracking) {
-        targetHeading = rawHeading;
-        displayHeading = rawHeading;
+        displayHeading = targetHeading;
         isTracking = true;
         permOverlay.classList.add('hidden');
-        return;
       }
-
-      let diff = rawHeading - targetHeading;
-      if (diff > 180) diff -= 360;
-      if (diff < -180) diff += 360;
-
-      if (Math.abs(diff) < 1.5) return;
-
-      targetHeading += diff * 0.15;
-      targetHeading = (targetHeading + 360) % 360;
     }
 
     function initSensors() {
       const isiOS = ["iPad Simulator","iPhone Simulator","iPod Simulator","iPad","iPhone","iPod"].includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
       
       if (isiOS) {
-        window.addEventListener("deviceorientation", handleOrientation, true);
+        window.addEventListener("deviceorientation", manageCompass, true);
       } else {
-        window.addEventListener("deviceorientationabsolute", handleOrientation, true);
-        window.addEventListener("deviceorientation", handleOrientation, true);
+        window.addEventListener("deviceorientationabsolute", manageCompass, true);
+        window.addEventListener("deviceorientation", manageCompass, true);
       }
     }
 
