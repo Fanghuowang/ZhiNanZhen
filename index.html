@@ -1,10 +1,22 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>东南西北 · 罗盘</title>
+  <meta name="theme-color" content="#000000">
+  <title>Compass</title>
   <style>
+    :root {
+      --bg: #000000;
+      --text-primary: #ffffff;
+      --text-secondary: #8e8e93;
+      --dial-bg: #1c1c1e;
+      --dial-border: #38383a;
+      --tick-color: #ffffff;
+      --north-color: #ff3b30; /* iOS Red */
+      --accent: #0a84ff;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -14,107 +26,148 @@
     }
 
     body {
-      background: #0b0f1a;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: system-ui, -apple-system, sans-serif;
-      padding: 16px;
-    }
-
-    .compass-card {
-      background: radial-gradient(circle at 30% 25%, #1e2a3a, #0a0e14);
-      border-radius: 56px;
-      padding: 30px 24px 24px 24px;
-      box-shadow: 0 25px 40px rgba(0, 0, 0, 0.8), inset 0 1px 4px rgba(255, 255, 255, 0.08);
-      border: 1px solid #2e3b4e;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 20px;
     }
 
-    .compass {
+    /* Top Bar */
+    .top-bar {
+      position: absolute;
+      top: max(24px, env(safe-area-inset-top));
+      right: 24px;
+      display: flex;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .unit-toggle {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: background 0.2s;
+    }
+
+    .unit-toggle:active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Compass Container */
+    .compass-container {
       position: relative;
-      width: min(78vw, 78vh, 360px);
-      height: min(78vw, 78vh, 360px);
-      border-radius: 50%;
-      background: #0f1621;
-      box-shadow: 
-        inset 0 12px 28px rgba(0, 0, 0, 0.9),
-        inset 0 -6px 12px rgba(70, 130, 200, 0.15),
-        0 0 0 6px #0e1219,
-        0 0 0 8px #2a3648,
-        0 20px 40px rgba(0, 0, 0, 0.7);
-      touch-action: none;
-    }
-
-    /* 刻度环 */
-    .ticks {
-      position: absolute;
-      inset: 10px;
-      border-radius: 50%;
-      background-image: repeating-conic-gradient(
-        from 0deg,
-        #6f8fb0 0deg 1deg,
-        transparent 1deg 4deg
-      );
-      -webkit-mask-image: radial-gradient(circle, transparent 72%, black 73%, black 97%, transparent 100%);
-      mask-image: radial-gradient(circle, transparent 72%, black 73%, black 97%, transparent 100%);
-      opacity: 0.4;
-    }
-
-    /* 旋转表盘 */
-    .dial {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      will-change: transform;
-    }
-
-    /* 东南西北文字完美定位 */
-    .dir {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 60px;
-      height: 60px;
-      margin-left: -30px;
-      margin-top: -30px;
-      font-size: 1.6rem;
-      font-weight: 800;
+      width: min(85vw, 85vh, 380px);
+      height: min(85vw, 85vh, 380px);
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
-      transform-origin: 0 150px; /* 旋转中心点 = 0 0(自身中心) + 150px 半径 */
+      margin-bottom: 40px;
     }
 
-    /* 分别设置初始位置并保持文字直立 */
-    .dir-n { transform: rotate(0deg); color: #ff5e5e; text-shadow: 0 0 15px #ff0000; background: rgba(255, 0, 0, 0.1); }
-    .dir-e { transform: rotate(90deg); color: #5bc0ff; text-shadow: 0 0 15px #0077ff; background: rgba(0, 120, 255, 0.1); }
-    .dir-s { transform: rotate(180deg); color: #5eff9e; text-shadow: 0 0 15px #00ff55; background: rgba(0, 255, 100, 0.1); }
-    .dir-w { transform: rotate(270deg); color: #ffd95b; text-shadow: 0 0 15px #ffaa00; background: rgba(255, 170, 0, 0.1); }
+    /* Outer Ring & Ticks */
+    .dial-wrapper {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      transition: transform 0.1s linear;
+      will-change: transform;
+    }
 
-    /* 修正文字方向，让其始终端正 */
-    .dir span {
-      display: block;
+    .dial-bg {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--dial-bg);
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }
+
+    /* Radial Ticks using SVG for precision */
+    .ticks-svg {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
-      line-height: 60px;
-      text-align: center;
+      border-radius: 50%;
+      overflow: visible;
     }
-    .dir-n span { transform: rotate(0deg); }
-    .dir-e span { transform: rotate(-90deg); }
-    .dir-s span { transform: rotate(-180deg); }
-    .dir-w span { transform: rotate(-270deg); }
 
-    /* 指针系统 */
+    /* Cardinal Characters (东南西北) */
+    .cardinal-container {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .cardinal {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 40px;
+      height: 40px;
+      margin-left: -20px;
+      margin-top: -20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.4rem;
+      transform-origin: 0 145px; /* Radius mapping */
+    }
+    
+    /* Rotate outward, then un-rotate the text to keep it upright */
+    .cardinal.n { transform: rotate(0deg); color: var(--north-color); }
+    .cardinal.e { transform: rotate(90deg); color: var(--text-primary); }
+    .cardinal.s { transform: rotate(180deg); color: var(--text-primary); }
+    .cardinal.w { transform: rotate(270deg); color: var(--text-primary); }
+
+    .cardinal span {
+      display: block;
+      transform: rotate(calc(-1 * var(--angle)));
+    }
+
+    /* Degree Numbers */
+    .degree-mark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 30px;
+      height: 30px;
+      margin-left: -15px;
+      margin-top: -15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transform-origin: 0 135px;
+    }
+    
+    .degree-mark span {
+      transform: rotate(calc(-1 * var(--angle)));
+    }
+
+    /* Center Needle */
     .needle-container {
       position: absolute;
       inset: 0;
       border-radius: 50%;
       pointer-events: none;
+      transition: transform 0.1s linear;
       will-change: transform;
     }
 
@@ -122,99 +175,214 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 6px;
-      height: 80px;
-      margin-left: -3px;
-      margin-top: -80px;
-      background: linear-gradient(to top, #ff5e5e 0%, #ff9f4b 100%);
-      border-radius: 10px 10px 0 0;
+      width: 4px;
+      height: 90px;
+      margin-left: -2px;
+      margin-top: -90px;
+      background: linear-gradient(to top, transparent 0%, var(--north-color) 100%);
+      border-radius: 4px 4px 0 0;
       transform-origin: bottom center;
-      box-shadow: 0 0 15px #ff4d4d;
-      border: 1px solid #ffccaa;
-      z-index: 20;
+      z-index: 10;
     }
 
     .needle-tail {
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 6px;
-      height: 60px;
-      margin-left: -3px;
-      background: linear-gradient(to bottom, #4a6f8a 0%, #1e2f40 100%);
-      border-radius: 0 0 10px 10px;
+      width: 4px;
+      height: 70px;
+      margin-left: -2px;
+      background: linear-gradient(to bottom, transparent 0%, #5c5c5e 100%);
+      border-radius: 0 0 4px 4px;
       transform-origin: top center;
-      z-index: 15;
+      z-index: 10;
     }
 
     .center-dot {
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 24px;
-      height: 24px;
-      margin-left: -12px;
-      margin-top: -12px;
-      background: #cddcec;
+      width: 16px;
+      height: 16px;
+      margin-left: -8px;
+      margin-top: -8px;
+      background: #fff;
       border-radius: 50%;
-      box-shadow: 0 0 0 6px #0b1118, 0 0 15px #aad0ff;
-      z-index: 30;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      z-index: 20;
     }
 
-    /* 数据显示 */
-    .bearing-display {
-      margin-top: 24px;
+    /* Bottom Info */
+    .info-panel {
       text-align: center;
-      color: #b8d4f0;
-      font-size: 1.5rem;
-      font-weight: 600;
-      background: #0c121c;
-      padding: 10px 32px;
-      border-radius: 50px;
-      box-shadow: inset 0 2px 8px #000000, 0 4px 12px #00000060;
-      letter-spacing: 2px;
-      border: 1px solid #253544;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
       width: 100%;
-      max-width: 260px;
+      max-width: 320px;
+      padding: 0 20px;
     }
 
-    .bearing-display span:first-child {
-      color: #fff;
-      min-width: 3em;
-      text-align: right;
-    }
-    .bearing-display span:last-child {
-      color: #ff5e5e;
-      min-width: 2em;
-      text-align: left;
+    .heading-text {
+      font-size: 4rem;
+      font-weight: 300;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 4px;
+      font-variant-numeric: tabular-nums;
     }
 
-    .hint {
-      color: #5f7d9c;
-      font-size: 0.8rem;
+    .direction-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: rgba(255,255,255,0.05);
+      padding: 16px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .meta-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .meta-value {
+      font-size: 1rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: max(30px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(255, 255, 255, 0.95);
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Permission Overlay */
+    .permission-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 500;
+      padding: 40px;
       text-align: center;
-      margin-top: 16px;
+      transition: opacity 0.3s;
+    }
+    
+    .permission-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .permission-overlay h2 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+    
+    .permission-overlay p {
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+      line-height: 1.5;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .btn-primary:active {
       opacity: 0.8;
     }
   </style>
 </head>
 <body>
-<div class="compass-card">
-  <div class="compass" id="compass">
-    <div class="ticks"></div>
-    
-    <!-- 表盘 -->
-    <div class="dial" id="dial">
-      <div class="dir dir-n"><span>北</span></div>
-      <div class="dir dir-e"><span>东</span></div>
-      <div class="dir dir-s"><span>南</span></div>
-      <div class="dir dir-w"><span>西</span></div>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <button class="unit-toggle" id="unitToggle">Metric</button>
+  </div>
+
+  <!-- Permission Overlay (for iOS & Android permission) -->
+  <div class="permission-overlay" id="permOverlay">
+    <h2>Compass Access</h2>
+    <p>This app requires access to your device's compass and location to provide accurate headings and coordinates.</p>
+    <button class="btn-primary" id="grantBtn">Enable Sensors</button>
+  </div>
+
+  <!-- Compass -->
+  <div class="compass-container" id="compassContainer">
+    <!-- Rotating Dial -->
+    <div class="dial-wrapper" id="dialWrapper">
+      <div class="dial-bg"></div>
+      
+      <!-- SVG Ticks -->
+      <svg class="ticks-svg" viewBox="0 0 200 200" id="ticksSvg">
+        <!-- Generated via JS -->
+      </svg>
+
+      <!-- Cardinal Directions -->
+      <div class="cardinal-container">
+        <div class="cardinal n"><span style="--angle: 0deg">北</span></div>
+        <div class="cardinal e"><span style="--angle: 90deg">东</span></div>
+        <div class="cardinal s"><span style="--angle: 180deg">南</span></div>
+        <div class="cardinal w"><span style="--angle: 270deg">西</span></div>
+      </div>
+
+      <!-- Degree Numbers -->
+      <div class="degree-mark" id="deg0"><span style="--angle: 0deg">0°</span></div>
+      <div class="degree-mark" id="deg90"><span style="--angle: 90deg">90°</span></div>
+      <div class="degree-mark" id="deg180"><span style="--angle: 180deg">180°</span></div>
+      <div class="degree-mark" id="deg270"><span style="--angle: 270deg">270°</span></div>
     </div>
 
-    <!-- 指针 -->
+    <!-- Static Center Needle (Counter-rotates) -->
     <div class="needle-container" id="needleContainer">
       <div class="needle"></div>
       <div class="needle-tail"></div>
@@ -222,115 +390,316 @@
     </div>
   </div>
 
-  <div class="bearing-display">
-    <span id="bearingValue">0°</span>
-    <span id="directionLabel">北</span>
+  <!-- Info Panel -->
+  <div class="info-panel" id="infoPanel">
+    <div class="heading-text" id="headingText">0°</div>
+    <div class="direction-text" id="directionText">N</div>
+    
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="meta-label">Altitude</span>
+        <span class="meta-value" id="altValue">-- m</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Speed</span>
+        <span class="meta-value" id="speedValue">0 km/h</span>
+      </div>
+    </div>
   </div>
-  <div class="hint" id="hintText">请点击屏幕授权传感器</div>
-</div>
 
-<script>
-  const dial = document.getElementById('dial');
-  const needleContainer = document.getElementById('needleContainer');
-  const bearingValue = document.getElementById('bearingValue');
-  const directionLabel = document.getElementById('directionLabel');
-  const hintText = document.getElementById('hintText');
+  <!-- Toast -->
+  <div class="toast" id="toast">Copied to clipboard</div>
 
-  const DIR_NAMES = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
+  <script>
+    // UI Elements
+    const dialWrapper = document.getElementById('dialWrapper');
+    const needleContainer = document.getElementById('needleContainer');
+    const headingText = document.getElementById('headingText');
+    const directionText = document.getElementById('directionText');
+    const altValue = document.getElementById('altValue');
+    const speedValue = document.getElementById('speedValue');
+    const unitToggle = document.getElementById('unitToggle');
+    const permOverlay = document.getElementById('permOverlay');
+    const grantBtn = document.getElementById('grantBtn');
+    const toast = document.getElementById('toast');
+    const ticksSvg = document.getElementById('ticksSvg');
 
-  let targetAlpha = 0;
-  let currentAlpha = 0;
-  let isActive = false;
+    // State
+    let currentHeading = 0;
+    let targetHeading = 0;
+    let isMetric = true;
+    let currentAltitude = 0;
+    let currentSpeed = 0;
+    let currentLat = 0;
+    let currentLon = 0;
+    let accuracyLevel = 'Unknown';
+    let isTracking = false;
+    let lastSensorTime = 0;
+    let sensorTimeout;
 
-  // 核心平滑算法：环形插值防跳变
-  function updateDisplay() {
-    if (!isActive) return;
-
-    // 计算最短路径差值 (处理 359 -> 0 的环绕)
-    let diff = targetAlpha - currentAlpha;
-    if (diff > 180) diff -= 360;
-    if (diff < -180) diff += 360;
-    
-    // 缓动插值
-    currentAlpha += diff * 0.15;
-    if (currentAlpha < 0) currentAlpha += 360;
-    if (currentAlpha >= 360) currentAlpha -= 360;
-
-    // 1. 表盘旋转：跟随手机角度 (东南西北随之转动)
-    dial.style.transform = `rotate(${currentAlpha}deg)`;
-    
-    // 2. 指针旋转：永远指向北方 (反向旋转)
-    needleContainer.style.transform = `rotate(${-currentAlpha}deg)`;
-
-    // 3. 文本显示
-    const displayAlpha = Math.round(currentAlpha);
-    const dirIndex = Math.round(displayAlpha / 45) % 8;
-    
-    bearingValue.textContent = displayAlpha + '°';
-    directionLabel.textContent = DIR_NAMES[dirIndex];
-    
-    // 动态文字颜色
-    const colors = ['#ff5e5e', '#ffaa5e', '#5bc0ff', '#5bd4ff', '#5eff9e', '#aaff5e', '#ffd95b', '#ff9e5e'];
-    directionLabel.style.color = colors[dirIndex];
-
-    requestAnimationFrame(updateDisplay);
-  }
-
-  // 处理传感器数据
-  function handleOrientation(event) {
-    let alpha = event.alpha;
-
-    // 兼容 iOS 的 webkitCompassHeading (它直接提供了手机朝向，0=北，90=东)
-    if (event.webkitCompassHeading !== undefined) {
-      alpha = event.webkitCompassHeading;
-    }
-
-    if (alpha === null || alpha === undefined) return;
-
-    // 标准化角度到 0-360
-    targetAlpha = (alpha % 360 + 360) % 360;
-    
-    if (!isActive) {
-      isActive = true;
-      currentAlpha = targetAlpha; // 首次直接对齐，避免从0跳转
-      hintText.textContent = '🧭 转动手机，指针自动指北';
-      requestAnimationFrame(updateDisplay);
-    }
-  }
-
-  // 权限请求逻辑
-  function initCompass() {
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-      // iOS 13+ 需要用户交互授权
-      DeviceOrientationEvent.requestPermission()
-        .then(permissionState => {
-          if (permissionState === 'granted') {
-            window.addEventListener('deviceorientation', handleOrientation, true);
-            hintText.textContent = '🧭 罗盘已启动';
-          } else {
-            hintText.textContent = '⚠️ 未获得传感器权限';
-          }
-        })
-        .catch(console.error);
-    } else {
-      // Android / 其他浏览器直接监听
-      window.addEventListener('deviceorientation', handleOrientation, true);
+    // Generate SVG Ticks
+    function generateTicks() {
+      let html = '';
+      for (let i = 0; i < 360; i += 2) {
+        const isMajor = i % 30 === 0;
+        const isMedium = i % 10 === 0;
+        
+        // Convert to radians (0 is Top, so -90)
+        const angle = (i - 90) * (Math.PI / 180);
+        const outerRadius = 90;
+        const innerRadius = isMajor ? 82 : (isMedium ? 85 : 87);
+        
+        const x1 = 100 + outerRadius * Math.cos(angle);
+        const y1 = 100 + outerRadius * Math.sin(angle);
+        const x2 = 100 + innerRadius * Math.cos(angle);
+        const y2 = 100 + innerRadius * Math.sin(angle);
+        
+        const strokeWidth = isMajor ? 2 : (isMedium ? 1.5 : 1);
+        const strokeColor = isMajor ? '#ffffff' : (isMedium ? '#a0a0a5' : '#5c5c5e');
+        
+        html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-linecap="round" />`;
+      }
       
-      // 如果 2 秒内没有数据，提示可能不支持
-      setTimeout(() => {
-        if (!isActive) {
-          hintText.textContent = '⚠️ 未检测到传感器，请确保在 HTTPS 下访问';
+      // Add secondary degree numbers (30, 60, 120, etc.)
+      [30, 60, 120, 150, 210, 240, 300, 330].forEach(deg => {
+        const angle = deg;
+        html += `
+          <text x="100" y="30" fill="#8e8e93" font-size="8" font-weight="500" text-anchor="middle" dominant-baseline="middle" 
+                transform="rotate(${angle} 100 100) translate(0, -5) rotate(${-angle} 100 30)" 
+                style="transform-origin: 100px 100px;">
+            ${deg}°
+          </text>
+        `;
+      });
+
+      ticksSvg.innerHTML = html;
+      
+      // Fix positioning of dynamic text inside SVG
+      const texts = ticksSvg.querySelectorAll('text');
+      texts.forEach(t => {
+        // ensure text unrotates properly
+        const match = t.getAttribute('transform').match(/rotate\((-?\d+)/);
+        if(match) {
+           // The simple positioning above handles it.
         }
+      });
+    }
+
+    // Card direction mappings
+    const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
+    const directionsEn = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+
+    // Smooth Animation Loop
+    let lastRenderTime = performance.now();
+    function render(now) {
+      const dt = now - lastRenderTime;
+      lastRenderTime = now;
+
+      if (isTracking) {
+        // Calculate shortest path for smooth rotation
+        let diff = targetHeading - currentHeading;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+        
+        // Lerp based on time to be framerate independent
+        const lerpFactor = 1 - Math.pow(0.001, dt / 1000);
+        currentHeading += diff * lerpFactor;
+        
+        // Normalize
+        currentHeading = (currentHeading + 360) % 360;
+        
+        // Apply CSS transforms
+        // Dial rotates WITH the heading (so North text moves to actual North)
+        dialWrapper.style.transform = `rotate(${-currentHeading}deg)`;
+        
+        // Needle rotates OPPOSITE to always point North on screen
+        needleContainer.style.transform = `rotate(${currentHeading}deg)`;
+
+        // Update Text
+        const displayDeg = Math.round(currentHeading);
+        headingText.textContent = `${displayDeg}°`;
+        
+        const dirIdx = Math.round(displayDeg / 45) % 8;
+        directionText.textContent = `${directionsEn[dirIdx]} · ${directions[dirIdx]}`;
+        
+        // Color N red when pointing roughly North
+        if (dirIdx === 0) {
+          directionText.style.color = 'var(--north-color)';
+        } else {
+          directionText.style.color = 'var(--text-secondary)';
+        }
+      }
+      
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+
+    // Sensor Handlers
+    function handleOrientation(event) {
+      let alpha = event.alpha;
+      
+      // iOS heading is webkitCompassHeading (0-360, clockwise from North)
+      if (event.webkitCompassHeading !== undefined) {
+        alpha = event.webkitCompassHeading;
+      }
+      
+      if (alpha === null || alpha === undefined) return;
+
+      // If using webkitCompassHeading, it represents the device heading directly.
+      // If using standard alpha, it's typically the rotation counter-clockwise? 
+      // Standard alpha: 0 is North, 90 is West (CCW). We need to invert it for standard compass behavior.
+      // Actually, in most Android browsers, alpha is CCW from North.
+      // We want targetHeading to be CW from North.
+      if (event.webkitCompassHeading !== undefined) {
+          targetHeading = alpha;
+      } else {
+          // Fallback for standard alpha: convert CCW to CW
+          targetHeading = (360 - alpha) % 360; 
+      }
+
+      // Handle sensor timeout
+      lastSensorTime = Date.now();
+      if (!isTracking) {
+        isTracking = true;
+        currentHeading = targetHeading;
+        permOverlay.classList.add('hidden');
+      }
+
+      clearTimeout(sensorTimeout);
+      sensorTimeout = setTimeout(() => {
+        isTracking = false;
+        directionText.textContent = 'No Sensor';
       }, 2000);
     }
-  }
 
-  // 绑定点击启动
-  window.addEventListener('click', initCompass, { once: true });
-  window.addEventListener('touchstart', initCompass, { once: true });
+    // Geolocation Handlers
+    function handleLocation(position) {
+      const { latitude, longitude, altitude, speed, accuracy } = position.coords;
+      currentLat = latitude;
+      currentLon = longitude;
+      
+      if (accuracy < 20) accuracyLevel = 'High';
+      else if (accuracy < 50) accuracyLevel = 'Medium';
+      else accuracyLevel = 'Low';
 
-  // 主动尝试启动（针对不需要权限的安卓）
-  initCompass();
-</script>
+      // Speed
+      currentSpeed = speed || 0; // m/s
+      updateSpeedDisplay();
+
+      // Altitude
+      if (altitude !== null && altitude !== undefined) {
+        currentAltitude = altitude;
+        updateAltitudeDisplay();
+      }
+    }
+
+    function handleLocationError(err) {
+      console.warn('Geolocation error:', err);
+      currentLat = 0;
+      currentLon = 0;
+    }
+
+    function updateSpeedDisplay() {
+      if (isMetric) {
+        speedValue.textContent = `${(currentSpeed * 3.6).toFixed(1)} km/h`;
+      } else {
+        speedValue.textContent = `${(currentSpeed * 2.237).toFixed(1)} mph`;
+      }
+    }
+
+    function updateAltitudeDisplay() {
+      if (isMetric) {
+        altValue.textContent = `${currentAltitude.toFixed(0)} m`;
+      } else {
+        altValue.textContent = `${(currentAltitude * 3.281).toFixed(0)} ft`;
+      }
+    }
+
+    // Unit Toggle
+    unitToggle.addEventListener('click', () => {
+      isMetric = !isMetric;
+      unitToggle.textContent = isMetric ? 'Metric' : 'Imperial';
+      updateSpeedDisplay();
+      if (currentAltitude !== null) updateAltitudeDisplay();
+    });
+
+    // Copy Coordinates on Long Press
+    let pressTimer;
+    const infoPanel = document.getElementById('infoPanel');
+
+    function startPress() {
+      pressTimer = setTimeout(() => {
+        const coordsText = `Lat: ${currentLat.toFixed(6)}, Lon: ${currentLon.toFixed(6)}\nHeading: ${Math.round(currentHeading)}° (Accuracy: ${accuracyLevel})`;
+        navigator.clipboard.writeText(coordsText).then(() => {
+          showToast('Coordinates & Heading Copied!');
+        }).catch(() => {
+          showToast('Failed to copy');
+        });
+      }, 600); // 600ms long press
+    }
+
+    function cancelPress() {
+      clearTimeout(pressTimer);
+    }
+
+    infoPanel.addEventListener('mousedown', startPress);
+    infoPanel.addEventListener('touchstart', startPress);
+    infoPanel.addEventListener('mouseup', cancelPress);
+    infoPanel.addEventListener('touchend', cancelPress);
+    infoPanel.addEventListener('mouseleave', cancelPress);
+    infoPanel.addEventListener('touchcancel', cancelPress);
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // Initialize Sensors with Permissions
+    function initSensors() {
+      // Request Compass
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(state => {
+            if (state === 'granted') {
+              window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+              window.addEventListener('deviceorientation', handleOrientation, true);
+            } else {
+              alert('Compass permission denied.');
+            }
+          })
+          .catch(console.error);
+      } else {
+        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+        window.addEventListener('deviceorientation', handleOrientation, true);
+      }
+
+      // Request Location
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(handleLocation, handleLocationError, {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 5000
+        });
+      }
+    }
+
+    grantBtn.addEventListener('click', () => {
+      permOverlay.classList.add('hidden');
+      initSensors();
+    });
+
+    // Generate visuals on load
+    generateTicks();
+    
+    // Auto-init if on Android (no permission needed)
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
+      initSensors();
+      permOverlay.classList.add('hidden');
+    }
+
+  </script>
 </body>
 </html>
