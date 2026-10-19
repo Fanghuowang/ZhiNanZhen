@@ -48,7 +48,7 @@
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      will-change: transform;
+      /* The browser handles the rotation natively */
     }
 
     .dial-bg {
@@ -73,7 +73,6 @@
       inset: 0;
       border-radius: 50%;
       pointer-events: none;
-      will-change: transform;
     }
 
     .needle {
@@ -252,10 +251,10 @@
     const grantBtn = document.getElementById('grantBtn');
     const compassSvg = document.getElementById('compassSvg');
 
-    let targetHeading = 0;
-    let displayHeading = 0; 
     let isTracking = false;
+    let currentHeading = 0;
 
+    // Build the SVG (Replaced N/E/S/W with 北/东/南/西)
     function buildCompass() {
       let html = '';
       const cx = 200;
@@ -307,39 +306,32 @@
 
     const dirNames = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
 
-    function render() {
-      if (isTracking) {
-        let diff = targetHeading - displayHeading;
-        if (diff > 180) diff -= 360;
-        if (diff < -180) diff += 360;
-        
-        // Smooth visual animation
-        displayHeading += diff * 0.15;
-        displayHeading = (displayHeading + 360) % 360;
-        
-        dialWrapper.style.transform = `rotate(${-displayHeading}deg)`;
-        needleContainer.style.transform = `rotate(${displayHeading}deg)`;
+    // EXACT ROTATE FUNCTION FROM YOUR REFERENCE SITE
+    function rotate(degree) {
+      // No requestAnimationFrame, no lerping. Just native CSS rotation.
+      dialWrapper.style.transform = `rotate(${degree}deg)`;
+      needleContainer.style.transform = `rotate(${-degree}deg)`;
 
-        const displayDeg = Math.round(displayHeading);
-        headingText.textContent = `${displayDeg}°`;
-        
-        const dirIdx = Math.round(displayDeg / 45) % 8;
-        directionText.textContent = dirNames[dirIdx];
-        
-        if (dirIdx === 0) {
-          directionText.style.color = 'var(--north-color)';
-        } else {
-          directionText.style.color = 'var(--text-secondary)';
-        }
+      // Normalize for UI text
+      let displayDeg = Math.round(degree) % 360;
+      if (displayDeg < 0) displayDeg += 360;
+      
+      headingText.textContent = `${displayDeg}°`;
+      
+      const dirIdx = Math.round(displayDeg / 45) % 8;
+      directionText.textContent = dirNames[dirIdx];
+      
+      if (dirIdx === 0) {
+        directionText.style.color = 'var(--north-color)';
+      } else {
+        directionText.style.color = 'var(--text-secondary)';
       }
-      requestAnimationFrame(render);
     }
 
-    // EXACT LOGIC FROM REFERENCE SITE
+    // EXACT SENSOR LOGIC FROM YOUR REFERENCE SITE
     function manageCompass(e) {
       let absoluteHeading = 0;
-      
-      // 1. Get raw heading
+
       if (e.webkitCompassHeading) {
         absoluteHeading = e.webkitCompassHeading - 180;
       } else if (e.alpha !== null && e.alpha !== undefined) {
@@ -348,25 +340,24 @@
         return;
       }
 
-      // 2. Apply their exact math offset
       absoluteHeading -= 180;
       if (absoluteHeading > 360) absoluteHeading -= 360;
-      if (absoluteHeading < 0) absoluteHeading += 360;
 
-      targetHeading = absoluteHeading;
+      // They don't smooth, they just pass it to rotate
+      rotate(absoluteHeading);
 
       if (!isTracking) {
-        displayHeading = targetHeading;
         isTracking = true;
         permOverlay.classList.add('hidden');
       }
     }
 
     function initSensors() {
+      // EXACT PLATFORM DETECTION FROM REFERENCE SITE
       const isiOS = ["iPad Simulator","iPhone Simulator","iPod Simulator","iPad","iPhone","iPod"].includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
       
       if (isiOS) {
-        window.addEventListener("deviceorientation", manageCompass, true);
+        window.addEventListener("deviceorientation", manageCompass);
       } else {
         window.addEventListener("deviceorientationabsolute", manageCompass, true);
         window.addEventListener("deviceorientation", manageCompass, true);
@@ -389,13 +380,13 @@
       }
     });
 
+    // Auto-start for Android
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
       initSensors();
       permOverlay.classList.add('hidden');
     }
 
     buildCompass();
-    requestAnimationFrame(render);
   </script>
 </body>
 </html>
